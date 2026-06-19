@@ -24,6 +24,17 @@ export const checkDefinitions = {
     severity: "High",
     source: "Microsoft Graph credentialUserRegistrationDetails"
   },
+  adminAccountsHygiene: {
+    id: "SEC-003",
+    title: "Admin Accounts Hygiene",
+    kind: "Security",
+    category: "Admin",
+    description: "Reviews privileged role assignments across the tenant.",
+    recommendation:
+      "Keep privileged access limited, review admin role assignments regularly, and use separate admin accounts where possible.",
+    severity: "High",
+    source: "Microsoft Graph directoryRoles members"
+  },
   guestUsersGovernance: {
     id: "GOV-001",
     title: "Guest Users Governance",

@@ -1,18 +1,20 @@
 import { checkDefinitions } from "@/lib/checks/definitions";
 import {
+  getAdminAccountsHygieneRecommendation,
   getDisabledUsersHygieneRecommendation,
   getGlobalAdminRecommendation,
   getGuestUsersGovernanceRecommendation,
   getMfaRegistrationCoverageRecommendation
 } from "@/lib/checks/recommendations";
 import {
+  getAdminAccountsHygieneStatus,
   getDisabledUsersHygieneStatus,
   getGlobalAdminStatus,
   getGuestUsersGovernanceStatus,
   getMfaRegistrationCoverageStatus
 } from "@/lib/checks/status";
 import type { CheckCategory, CheckKind, CheckStatus } from "@/lib/checks/types";
-import { getGlobalAdminCount } from "@/lib/graph/admins";
+import { getPrivilegedRoleMemberSummary } from "@/lib/graph/admins";
 import { getMfaRegistrationCoverage } from "@/lib/graph/authentication-methods";
 import {
   getDisabledUserCount,
@@ -36,6 +38,7 @@ export type DashboardCheck = {
   value: string;
   status: CheckStatus;
   recommendation: string;
+  details?: Record<string, unknown>;
 };
 
 export type DashboardOverview = {
@@ -60,7 +63,7 @@ export async function getDashboardOverview(
     guests,
     enabledUsers,
     disabledUsers,
-    globalAdminCount,
+    privilegedRoleSummary,
     mfaCoverage
   ] = await Promise.all([
     getUserCount(accessToken),
@@ -68,7 +71,7 @@ export async function getDashboardOverview(
     getGuestCount(accessToken),
     getEnabledUserCount(accessToken),
     getDisabledUserCount(accessToken),
-    getGlobalAdminCount(accessToken),
+    getPrivilegedRoleMemberSummary(accessToken),
     getMfaRegistrationCoverage(accessToken)
   ]);
 
@@ -80,9 +83,15 @@ export async function getDashboardOverview(
     disabledTotal === 0
       ? 0
       : Math.round((disabledUsers / disabledTotal) * 100);
-  const globalAdminStatus = getGlobalAdminStatus(globalAdminCount);
+  const globalAdminStatus = getGlobalAdminStatus(
+    privilegedRoleSummary.globalAdmins
+  );
   const mfaStatus = getMfaRegistrationCoverageStatus(
     mfaCoverage.registrationCoverage
+  );
+  const adminAccountsHygieneStatus = getAdminAccountsHygieneStatus(
+    privilegedRoleSummary.globalAdmins,
+    privilegedRoleSummary.privilegedAdmins
   );
   const guestGovernanceStatus = getGuestUsersGovernanceStatus(guestRatio);
   const disabledHygieneStatus = getDisabledUsersHygieneStatus(
@@ -105,7 +114,7 @@ export async function getDashboardOverview(
         title: checkDefinitions.globalAdminCount.title,
         kind: checkDefinitions.globalAdminCount.kind,
         category: checkDefinitions.globalAdminCount.category,
-        value: globalAdminCount.toLocaleString(),
+        value: privilegedRoleSummary.globalAdmins.toLocaleString(),
         status: globalAdminStatus,
         recommendation: getGlobalAdminRecommendation(globalAdminStatus)
       },
@@ -117,6 +126,18 @@ export async function getDashboardOverview(
         value: `${mfaCoverage.registrationCoverage} %`,
         status: mfaStatus,
         recommendation: getMfaRegistrationCoverageRecommendation(mfaStatus)
+      },
+      {
+        id: checkDefinitions.adminAccountsHygiene.id,
+        title: checkDefinitions.adminAccountsHygiene.title,
+        kind: checkDefinitions.adminAccountsHygiene.kind,
+        category: checkDefinitions.adminAccountsHygiene.category,
+        value: `${privilegedRoleSummary.globalAdmins.toLocaleString()} global / ${privilegedRoleSummary.privilegedAdmins.toLocaleString()} privileged`,
+        status: adminAccountsHygieneStatus,
+        recommendation: getAdminAccountsHygieneRecommendation(),
+        details: {
+          roles: privilegedRoleSummary.roles
+        }
       },
       {
         id: checkDefinitions.guestUsersGovernance.id,

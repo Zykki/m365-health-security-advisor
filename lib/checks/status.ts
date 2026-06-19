@@ -54,3 +54,22 @@ export function getMfaRegistrationCoverageStatus(
 
   return "Critical";
 }
+
+export function getAdminAccountsHygieneStatus(
+  globalAdmins: number,
+  privilegedAdmins: number
+): CheckStatus {
+  if (globalAdmins === 0) {
+    return "Critical";
+  }
+
+  if (globalAdmins > 10 || privilegedAdmins > 25) {
+    return "Critical";
+  }
+
+  if (globalAdmins >= 5 || privilegedAdmins > 10) {
+    return "Warning";
+  }
+
+  return "OK";
+}

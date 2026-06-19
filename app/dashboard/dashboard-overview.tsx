@@ -171,7 +171,7 @@ export function DashboardOverviewPanel() {
   const overview = state.status === "loaded" ? state.overview : null;
   const tenant = overview?.tenant;
   const securityChecks = overview
-    ? getChecksById(overview, ["SEC-001", "SEC-002"])
+    ? getChecksById(overview, ["SEC-001", "SEC-002", "SEC-003"])
     : [];
   const governanceChecks = overview
     ? getChecksById(overview, ["GOV-001", "HYG-001"])
@@ -245,11 +245,13 @@ export function DashboardOverviewPanel() {
 
         <div className="checks-stack">
           {state.status === "loading"
-            ? ["Global Admin Count", "MFA Registration Coverage"].map(
-                (title) => (
-                  <SecurityCheckCard key={title} title={title} loading />
-                )
-              )
+            ? [
+                "Global Admin Count",
+                "MFA Registration Coverage",
+                "Admin Accounts Hygiene"
+              ].map((title) => (
+                <SecurityCheckCard key={title} title={title} loading />
+              ))
             : securityChecks.map((check) => (
                 <SecurityCheckCard
                   key={check.id}

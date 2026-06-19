@@ -32,3 +32,7 @@ export function getMfaRegistrationCoverageRecommendation(status: CheckStatus) {
 
   return "MFA registration coverage is below the desired target. Continue onboarding users to modern MFA methods.";
 }
+
+export function getAdminAccountsHygieneRecommendation() {
+  return checkDefinitions.adminAccountsHygiene.recommendation;
+}
