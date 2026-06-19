@@ -381,6 +381,24 @@ button {
   overflow-wrap: anywhere;
 }
 
+.scan-row-button {
+  background: #ffffff;
+  border-radius: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  min-height: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.scan-row-button:focus-visible {
+  outline: 3px solid #9fc7e8;
+  outline-offset: -3px;
+  position: relative;
+  z-index: 1;
+}
+
 .trend {
   border-radius: 999px;
   font-size: 0.78rem;
@@ -635,6 +653,84 @@ button {
 .drawer-section p {
   line-height: 1.55;
   margin: 0;
+}
+
+.drawer-state {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 700;
+  margin: 0;
+  padding: 18px;
+}
+
+.scan-detail-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.scan-detail-counts span {
+  background: var(--surface);
+  border: 1px solid #d5dde9;
+  border-radius: 999px;
+  color: var(--foreground);
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 8px 10px;
+}
+
+.scan-result-list {
+  display: grid;
+  gap: 12px;
+}
+
+.scan-result-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.scan-result-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.scan-result-header span:not(.status-pill) {
+  color: var(--muted);
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.scan-result-header h4 {
+  font-size: 1rem;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.scan-result-card dl {
+  margin: 0;
+}
+
+.scan-result-card dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.scan-result-card dd {
+  font-weight: 800;
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .metadata-grid {

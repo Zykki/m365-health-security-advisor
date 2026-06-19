@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CheckDetailDrawer } from "@/app/dashboard/check-detail-drawer";
+import {
+  ScanDetailDrawer,
+  type ScanDetail
+} from "@/app/dashboard/scan-detail-drawer";
 import { SecurityCheckCard } from "@/app/dashboard/security-check-card";
 import type { DashboardCheck, DashboardOverview } from "@/lib/dashboard/overview";
 
@@ -26,6 +30,12 @@ type RecentScan = {
 type RecentScansState =
   | { status: "loading" }
   | { status: "loaded"; scans: RecentScan[] }
+  | { status: "error" };
+
+type ScanDetailState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "loaded"; scan: ScanDetail }
   | { status: "error" };
 
 type DashboardErrorPayload = {
@@ -147,6 +157,39 @@ function isRecentScan(value: unknown): value is RecentScan {
   );
 }
 
+function isScanDetail(value: unknown): value is ScanDetail {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const scan = value as Record<string, unknown>;
+
+  return (
+    typeof scan.id === "string" &&
+    typeof scan.createdAt === "string" &&
+    typeof scan.healthScore === "number" &&
+    typeof scan.okCount === "number" &&
+    typeof scan.warningCount === "number" &&
+    typeof scan.criticalCount === "number" &&
+    Array.isArray(scan.checkResults) &&
+    scan.checkResults.every((result) => {
+      if (!result || typeof result !== "object") {
+        return false;
+      }
+
+      const checkResult = result as Record<string, unknown>;
+
+      return (
+        typeof checkResult.checkId === "string" &&
+        typeof checkResult.title === "string" &&
+        typeof checkResult.status === "string" &&
+        typeof checkResult.value === "string" &&
+        typeof checkResult.recommendation === "string"
+      );
+    })
+  );
+}
+
 function formatScanDate(value: string) {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
@@ -172,6 +215,9 @@ export function DashboardOverviewPanel() {
   const [saveScanState, setSaveScanState] = useState<SaveScanState>("idle");
   const [recentScansState, setRecentScansState] = useState<RecentScansState>({
     status: "loading"
+  });
+  const [scanDetailState, setScanDetailState] = useState<ScanDetailState>({
+    status: "idle"
   });
 
   useEffect(() => {
@@ -274,6 +320,30 @@ export function DashboardOverviewPanel() {
       }
     } catch {
       setSaveScanState("error");
+    }
+  }
+
+  async function openScanDetail(scanId: string) {
+    setScanDetailState({ status: "loading" });
+
+    try {
+      const response = await fetch(`/api/scans/${encodeURIComponent(scanId)}`, {
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to load scan detail");
+      }
+
+      const payload = (await response.json()) as unknown;
+
+      if (!isScanDetail(payload)) {
+        throw new Error("Invalid scan detail response");
+      }
+
+      setScanDetailState({ status: "loaded", scan: payload });
+    } catch {
+      setScanDetailState({ status: "error" });
     }
   }
 
@@ -446,7 +516,13 @@ export function DashboardOverviewPanel() {
               <span role="columnheader">Critical</span>
             </div>
             {recentScans.map((scan, index) => (
-              <div className="recent-scans-row" role="row" key={scan.id}>
+              <button
+                className="recent-scans-row scan-row-button"
+                role="row"
+                key={scan.id}
+                type="button"
+                onClick={() => void openScanDetail(scan.id)}
+              >
                 <span role="cell">{formatScanDate(scan.createdAt)}</span>
                 <span role="cell">
                   {scan.healthScore}
@@ -467,7 +543,7 @@ export function DashboardOverviewPanel() {
                 <span role="cell">{scan.okCount}</span>
                 <span role="cell">{scan.warningCount}</span>
                 <span role="cell">{scan.criticalCount}</span>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -594,6 +670,16 @@ export function DashboardOverviewPanel() {
       <CheckDetailDrawer
         check={selectedCheck}
         onClose={() => setSelectedCheck(null)}
+      />
+      <ScanDetailDrawer
+        error={
+          scanDetailState.status === "error"
+            ? "Unable to load scan detail"
+            : undefined
+        }
+        loading={scanDetailState.status === "loading"}
+        scan={scanDetailState.status === "loaded" ? scanDetailState.scan : null}
+        onClose={() => setScanDetailState({ status: "idle" })}
       />
     </>
   );
