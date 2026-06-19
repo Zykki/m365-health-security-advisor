@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { CheckDetailDrawer } from "@/app/dashboard/check-detail-drawer";
 import { SecurityCheckCard } from "@/app/dashboard/security-check-card";
-import type { DashboardOverview } from "@/lib/dashboard/overview";
+import type { DashboardCheck, DashboardOverview } from "@/lib/dashboard/overview";
 
 type DashboardOverviewState =
   | { status: "loading" }
@@ -116,6 +117,9 @@ export function DashboardOverviewPanel() {
   const [state, setState] = useState<DashboardOverviewState>({
     status: "loading"
   });
+  const [selectedCheck, setSelectedCheck] = useState<DashboardCheck | null>(
+    null
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -311,6 +315,7 @@ export function DashboardOverviewPanel() {
                   value={check.value}
                   status={check.status}
                   recommendation={check.recommendation}
+                  onOpen={() => setSelectedCheck(check)}
                 />
               ))}
         </div>
@@ -341,10 +346,16 @@ export function DashboardOverviewPanel() {
                   value={check.value}
                   status={check.status}
                   recommendation={check.recommendation}
+                  onOpen={() => setSelectedCheck(check)}
                 />
               ))}
         </div>
       </section>
+
+      <CheckDetailDrawer
+        check={selectedCheck}
+        onClose={() => setSelectedCheck(null)}
+      />
     </>
   );
 }

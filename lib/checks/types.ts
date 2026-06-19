@@ -22,7 +22,9 @@ export type CheckDefinition = {
   kind: CheckKind;
   category: CheckCategory;
   description: string;
+  whyItMatters: string;
   recommendation: string;
+  howToFix: string;
   severity: CheckSeverity;
   source: string;
 };

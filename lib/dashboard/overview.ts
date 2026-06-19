@@ -38,7 +38,10 @@ export type DashboardCheck = {
   category: CheckCategory;
   value: string;
   status: CheckStatus;
+  description: string;
+  whyItMatters: string;
   recommendation: string;
+  howToFix: string;
   details?: Record<string, unknown>;
 };
 
@@ -113,7 +116,10 @@ export async function getDashboardOverview(
       category: checkDefinitions.globalAdminCount.category,
       value: privilegedRoleSummary.globalAdmins.toLocaleString(),
       status: globalAdminStatus,
-      recommendation: getGlobalAdminRecommendation(globalAdminStatus)
+      description: checkDefinitions.globalAdminCount.description,
+      whyItMatters: checkDefinitions.globalAdminCount.whyItMatters,
+      recommendation: getGlobalAdminRecommendation(globalAdminStatus),
+      howToFix: checkDefinitions.globalAdminCount.howToFix
     },
     {
       id: checkDefinitions.mfaRegistrationCoverage.id,
@@ -122,7 +128,10 @@ export async function getDashboardOverview(
       category: checkDefinitions.mfaRegistrationCoverage.category,
       value: `${mfaCoverage.registrationCoverage} %`,
       status: mfaStatus,
-      recommendation: getMfaRegistrationCoverageRecommendation(mfaStatus)
+      description: checkDefinitions.mfaRegistrationCoverage.description,
+      whyItMatters: checkDefinitions.mfaRegistrationCoverage.whyItMatters,
+      recommendation: getMfaRegistrationCoverageRecommendation(mfaStatus),
+      howToFix: checkDefinitions.mfaRegistrationCoverage.howToFix
     },
     {
       id: checkDefinitions.adminAccountsHygiene.id,
@@ -131,7 +140,10 @@ export async function getDashboardOverview(
       category: checkDefinitions.adminAccountsHygiene.category,
       value: `${privilegedRoleSummary.globalAdmins.toLocaleString()} global / ${privilegedRoleSummary.privilegedAdmins.toLocaleString()} privileged`,
       status: adminAccountsHygieneStatus,
+      description: checkDefinitions.adminAccountsHygiene.description,
+      whyItMatters: checkDefinitions.adminAccountsHygiene.whyItMatters,
       recommendation: getAdminAccountsHygieneRecommendation(),
+      howToFix: checkDefinitions.adminAccountsHygiene.howToFix,
       details: {
         roles: privilegedRoleSummary.roles
       }
@@ -143,9 +155,12 @@ export async function getDashboardOverview(
       category: checkDefinitions.guestUsersGovernance.category,
       value: `${guestRatio} %`,
       status: guestGovernanceStatus,
+      description: checkDefinitions.guestUsersGovernance.description,
+      whyItMatters: checkDefinitions.guestUsersGovernance.whyItMatters,
       recommendation: getGuestUsersGovernanceRecommendation(
         guestGovernanceStatus
-      )
+      ),
+      howToFix: checkDefinitions.guestUsersGovernance.howToFix
     },
     {
       id: checkDefinitions.disabledUsersHygiene.id,
@@ -154,7 +169,10 @@ export async function getDashboardOverview(
       category: checkDefinitions.disabledUsersHygiene.category,
       value: `${disabledUsers.toLocaleString()} disabled / ${disabledRatio} %`,
       status: disabledHygieneStatus,
-      recommendation: getDisabledUsersHygieneRecommendation()
+      description: checkDefinitions.disabledUsersHygiene.description,
+      whyItMatters: checkDefinitions.disabledUsersHygiene.whyItMatters,
+      recommendation: getDisabledUsersHygieneRecommendation(),
+      howToFix: checkDefinitions.disabledUsersHygiene.howToFix
     }
   ];
 
