@@ -19,9 +19,10 @@ Release 0.1 zaklada Next.js aplikaciu s prihlasenim cez Microsoft Entra ID, chra
 - logout
 - chranena route `/dashboard`
 - zobrazenie mena, emailu a tenant ID z tokenu
+- zobrazenie zakladneho prehladu pouzivatelov cez Microsoft Graph
 - Prisma schema so zakladnymi entitami `Tenant`, `AppUser`, `Account`, `Session`
 
-Nie je tu este Microsoft Graph scan, scoring, reporty, Application permissions ani Azure Functions.
+Nie je tu este scan engine, scoring, reporty, MFA kontroly, Application permissions ani Azure Functions.
 
 ## Lokalne spustenie
 
@@ -69,7 +70,7 @@ http://localhost:3000/api/auth/callback/azure-ad
 
 Provider ID v `auth.ts` je `azure-ad`, preto musi redirect URI v Entra portali pouzivat presne tuto callback path.
 
-Pouzivaju sa iba delegated scope `openid profile email User.Read`. Aplikacia zatial neziada Application permissions a nevola Microsoft Graph API.
+Pouzivaju sa iba delegated scope `openid profile email offline_access User.Read Directory.Read.All`. Aplikacia zatial neziada Application permissions. Graph Engine vola iba zakladne `/users` count dotazy pre `Total Users`, `Members`, `Guests`, `Enabled Users` a `Disabled Users`.
 
 ## Uzitocne prikazy
 

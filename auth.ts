@@ -23,7 +23,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     AzureADProvider({
       clientId: requiredEnv("AZURE_AD_CLIENT_ID"),
       clientSecret: requiredEnv("AZURE_AD_CLIENT_SECRET"),
-      tenantId,
+      issuer: `https://login.microsoftonline.com/${tenantId}/v2.0`,
       authorization: {
         params: {
           scope: "openid profile email offline_access User.Read Directory.Read.All"

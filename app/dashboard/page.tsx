@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
+import { UsersOverview } from "@/app/dashboard/users-overview";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -41,6 +42,8 @@ export default async function DashboardPage() {
           <strong>{session.user.tenantId ?? "Nenajdeny v tokene"}</strong>
         </article>
       </section>
+
+      <UsersOverview />
     </main>
   );
 }
