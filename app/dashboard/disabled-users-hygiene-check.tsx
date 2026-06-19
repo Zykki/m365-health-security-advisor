@@ -3,22 +3,22 @@
 import { useEffect, useState } from "react";
 import { SecurityCheckCard } from "@/app/dashboard/security-check-card";
 
-type GuestUsersRatioCheck = {
-  guests: number;
-  members: number;
-  guestRatio: number;
+type DisabledUsersHygieneCheck = {
+  disabledUsers: number;
+  enabledUsers: number;
+  disabledRatio: number;
   status: "OK" | "Warning" | "Critical";
   recommendation: string;
 };
 
-type GuestUsersRatioCheckState =
+type DisabledUsersHygieneCheckState =
   | { status: "loading" }
-  | { status: "loaded"; check: GuestUsersRatioCheck }
+  | { status: "loaded"; check: DisabledUsersHygieneCheck }
   | { status: "error" };
 
-function isGuestUsersRatioCheck(
+function isDisabledUsersHygieneCheck(
   value: unknown
-): value is GuestUsersRatioCheck {
+): value is DisabledUsersHygieneCheck {
   if (!value || typeof value !== "object") {
     return false;
   }
@@ -26,9 +26,9 @@ function isGuestUsersRatioCheck(
   const payload = value as Record<string, unknown>;
 
   return (
-    typeof payload.guests === "number" &&
-    typeof payload.members === "number" &&
-    typeof payload.guestRatio === "number" &&
+    typeof payload.disabledUsers === "number" &&
+    typeof payload.enabledUsers === "number" &&
+    typeof payload.disabledRatio === "number" &&
     (payload.status === "OK" ||
       payload.status === "Warning" ||
       payload.status === "Critical") &&
@@ -36,28 +36,28 @@ function isGuestUsersRatioCheck(
   );
 }
 
-export function GuestUsersRatioCheck() {
-  const [state, setState] = useState<GuestUsersRatioCheckState>({
+export function DisabledUsersHygieneCheck() {
+  const [state, setState] = useState<DisabledUsersHygieneCheckState>({
     status: "loading"
   });
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadGuestUsersRatioCheck() {
+    async function loadDisabledUsersHygieneCheck() {
       try {
-        const response = await fetch("/api/graph/users/guest-ratio", {
+        const response = await fetch("/api/graph/users/disabled-hygiene", {
           cache: "no-store"
         });
 
         if (!response.ok) {
-          throw new Error("Unable to load Guest Users Ratio");
+          throw new Error("Unable to load Disabled Users Hygiene");
         }
 
         const payload = (await response.json()) as unknown;
 
-        if (!isGuestUsersRatioCheck(payload)) {
-          throw new Error("Invalid Guest Users Ratio response");
+        if (!isDisabledUsersHygieneCheck(payload)) {
+          throw new Error("Invalid Disabled Users Hygiene response");
         }
 
         if (isMounted) {
@@ -70,7 +70,7 @@ export function GuestUsersRatioCheck() {
       }
     }
 
-    void loadGuestUsersRatioCheck();
+    void loadDisabledUsersHygieneCheck();
 
     return () => {
       isMounted = false;
@@ -79,10 +79,12 @@ export function GuestUsersRatioCheck() {
 
   return (
     <SecurityCheckCard
-      title="Guest Users Governance"
-      label="Governance signal"
+      title="Disabled Users Hygiene"
+      label="Tenant hygiene signal"
       value={
-        state.status === "loaded" ? `${state.check.guestRatio} %` : undefined
+        state.status === "loaded"
+          ? `${state.check.disabledUsers.toLocaleString()} disabled / ${state.check.disabledRatio} %`
+          : undefined
       }
       status={state.status === "loaded" ? state.check.status : undefined}
       recommendation={
@@ -91,7 +93,7 @@ export function GuestUsersRatioCheck() {
       loading={state.status === "loading"}
       error={
         state.status === "error"
-          ? "Unable to load Guest Users Ratio"
+          ? "Unable to load Disabled Users Hygiene"
           : undefined
       }
     />

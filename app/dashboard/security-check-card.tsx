@@ -2,6 +2,7 @@ type SecurityCheckStatus = "OK" | "Warning" | "Critical";
 
 type SecurityCheckCardProps = {
   title: string;
+  label?: string;
   value?: number | string;
   status?: SecurityCheckStatus;
   recommendation?: string;
@@ -11,6 +12,7 @@ type SecurityCheckCardProps = {
 
 export function SecurityCheckCard({
   title,
+  label = "Security Check",
   value,
   status,
   recommendation,
@@ -20,7 +22,7 @@ export function SecurityCheckCard({
   return (
     <section className="overview-section" aria-label={`${title} check`}>
       <div className="section-heading">
-        <p className="eyebrow">Security Check</p>
+        <p className="eyebrow">{label}</p>
         <h2>{title}</h2>
       </div>
 

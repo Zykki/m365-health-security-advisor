@@ -17,12 +17,8 @@ function getGuestRatioStatus(guestRatio: number): GuestRatioStatus {
 }
 
 function getGuestRatioRecommendation(status: GuestRatioStatus) {
-  if (status === "Critical") {
-    return "Guest users represent a high percentage of directory accounts. Review external users and remove stale guest accounts.";
-  }
-
-  if (status === "Warning") {
-    return "Guest users are above the recommended range. Review external access and stale guest accounts.";
+  if (status === "Warning" || status === "Critical") {
+    return "High guest user ratio is not automatically a misconfiguration. It indicates that external access should be reviewed regularly and stale guest accounts should be removed.";
   }
 
   return "Guest users are within the recommended range.";
