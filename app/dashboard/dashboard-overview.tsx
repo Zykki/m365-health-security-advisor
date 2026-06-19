@@ -46,12 +46,18 @@ function isDashboardOverview(value: unknown): value is DashboardOverview {
   const payload = value as Record<string, unknown>;
   const tenant = payload.tenant as Record<string, unknown> | undefined;
   const users = payload.users as Record<string, unknown> | undefined;
+  const healthScore = payload.healthScore as Record<string, unknown> | undefined;
 
   return (
     !!tenant &&
     !!users &&
+    !!healthScore &&
     Array.isArray(payload.checks) &&
-    userMetrics.every(({ key }) => typeof users[key] === "number")
+    userMetrics.every(({ key }) => typeof users[key] === "number") &&
+    typeof healthScore.score === "number" &&
+    typeof healthScore.okCount === "number" &&
+    typeof healthScore.warningCount === "number" &&
+    typeof healthScore.criticalCount === "number"
   );
 }
 
@@ -76,6 +82,18 @@ function getChecksById(
     .filter((check): check is DashboardOverview["checks"][number] =>
       Boolean(check)
     );
+}
+
+function getHealthScoreTone(score: number) {
+  if (score >= 80) {
+    return "ok";
+  }
+
+  if (score >= 60) {
+    return "warning";
+  }
+
+  return "critical";
 }
 
 function isSessionExpiredPayload(
@@ -170,6 +188,7 @@ export function DashboardOverviewPanel() {
 
   const overview = state.status === "loaded" ? state.overview : null;
   const tenant = overview?.tenant;
+  const healthScore = overview?.healthScore;
   const securityChecks = overview
     ? getChecksById(overview, ["SEC-001", "SEC-002", "SEC-003"])
     : [];
@@ -179,6 +198,38 @@ export function DashboardOverviewPanel() {
 
   return (
     <>
+      <section className="health-score-card" aria-label="Security score">
+        <div>
+          <p className="eyebrow">Health Score</p>
+          <h2>Security Score</h2>
+        </div>
+        <div
+          className={
+            state.status === "loaded" && healthScore
+              ? `health-score-value score-${getHealthScoreTone(
+                  healthScore.score
+                )}`
+              : "health-score-value"
+          }
+        >
+          <strong>
+            {state.status === "loading" ? "Loading..." : healthScore?.score}
+          </strong>
+          <span>/ 100</span>
+        </div>
+        <div className="health-score-counts">
+          <span>OK: {state.status === "loading" ? "-" : healthScore?.okCount}</span>
+          <span>
+            Warning:{" "}
+            {state.status === "loading" ? "-" : healthScore?.warningCount}
+          </span>
+          <span>
+            Critical:{" "}
+            {state.status === "loading" ? "-" : healthScore?.criticalCount}
+          </span>
+        </div>
+      </section>
+
       <section
         id="overview"
         className="dashboard-section"

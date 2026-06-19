@@ -6,6 +6,7 @@ import {
   getGuestUsersGovernanceRecommendation,
   getMfaRegistrationCoverageRecommendation
 } from "@/lib/checks/recommendations";
+import { calculateHealthScore } from "@/lib/checks/scoring";
 import {
   getAdminAccountsHygieneStatus,
   getDisabledUsersHygieneStatus,
@@ -49,6 +50,12 @@ export type DashboardOverview = {
     guests: number;
     enabled: number;
     disabled: number;
+  };
+  healthScore: {
+    score: number;
+    okCount: number;
+    warningCount: number;
+    criticalCount: number;
   };
   checks: DashboardCheck[];
 };
@@ -98,6 +105,58 @@ export async function getDashboardOverview(
     disabledUsers,
     disabledRatio
   );
+  const checks: DashboardCheck[] = [
+    {
+      id: checkDefinitions.globalAdminCount.id,
+      title: checkDefinitions.globalAdminCount.title,
+      kind: checkDefinitions.globalAdminCount.kind,
+      category: checkDefinitions.globalAdminCount.category,
+      value: privilegedRoleSummary.globalAdmins.toLocaleString(),
+      status: globalAdminStatus,
+      recommendation: getGlobalAdminRecommendation(globalAdminStatus)
+    },
+    {
+      id: checkDefinitions.mfaRegistrationCoverage.id,
+      title: checkDefinitions.mfaRegistrationCoverage.title,
+      kind: checkDefinitions.mfaRegistrationCoverage.kind,
+      category: checkDefinitions.mfaRegistrationCoverage.category,
+      value: `${mfaCoverage.registrationCoverage} %`,
+      status: mfaStatus,
+      recommendation: getMfaRegistrationCoverageRecommendation(mfaStatus)
+    },
+    {
+      id: checkDefinitions.adminAccountsHygiene.id,
+      title: checkDefinitions.adminAccountsHygiene.title,
+      kind: checkDefinitions.adminAccountsHygiene.kind,
+      category: checkDefinitions.adminAccountsHygiene.category,
+      value: `${privilegedRoleSummary.globalAdmins.toLocaleString()} global / ${privilegedRoleSummary.privilegedAdmins.toLocaleString()} privileged`,
+      status: adminAccountsHygieneStatus,
+      recommendation: getAdminAccountsHygieneRecommendation(),
+      details: {
+        roles: privilegedRoleSummary.roles
+      }
+    },
+    {
+      id: checkDefinitions.guestUsersGovernance.id,
+      title: checkDefinitions.guestUsersGovernance.title,
+      kind: checkDefinitions.guestUsersGovernance.kind,
+      category: checkDefinitions.guestUsersGovernance.category,
+      value: `${guestRatio} %`,
+      status: guestGovernanceStatus,
+      recommendation: getGuestUsersGovernanceRecommendation(
+        guestGovernanceStatus
+      )
+    },
+    {
+      id: checkDefinitions.disabledUsersHygiene.id,
+      title: checkDefinitions.disabledUsersHygiene.title,
+      kind: checkDefinitions.disabledUsersHygiene.kind,
+      category: checkDefinitions.disabledUsersHygiene.category,
+      value: `${disabledUsers.toLocaleString()} disabled / ${disabledRatio} %`,
+      status: disabledHygieneStatus,
+      recommendation: getDisabledUsersHygieneRecommendation()
+    }
+  ];
 
   return {
     tenant,
@@ -108,57 +167,7 @@ export async function getDashboardOverview(
       enabled: enabledUsers,
       disabled: disabledUsers
     },
-    checks: [
-      {
-        id: checkDefinitions.globalAdminCount.id,
-        title: checkDefinitions.globalAdminCount.title,
-        kind: checkDefinitions.globalAdminCount.kind,
-        category: checkDefinitions.globalAdminCount.category,
-        value: privilegedRoleSummary.globalAdmins.toLocaleString(),
-        status: globalAdminStatus,
-        recommendation: getGlobalAdminRecommendation(globalAdminStatus)
-      },
-      {
-        id: checkDefinitions.mfaRegistrationCoverage.id,
-        title: checkDefinitions.mfaRegistrationCoverage.title,
-        kind: checkDefinitions.mfaRegistrationCoverage.kind,
-        category: checkDefinitions.mfaRegistrationCoverage.category,
-        value: `${mfaCoverage.registrationCoverage} %`,
-        status: mfaStatus,
-        recommendation: getMfaRegistrationCoverageRecommendation(mfaStatus)
-      },
-      {
-        id: checkDefinitions.adminAccountsHygiene.id,
-        title: checkDefinitions.adminAccountsHygiene.title,
-        kind: checkDefinitions.adminAccountsHygiene.kind,
-        category: checkDefinitions.adminAccountsHygiene.category,
-        value: `${privilegedRoleSummary.globalAdmins.toLocaleString()} global / ${privilegedRoleSummary.privilegedAdmins.toLocaleString()} privileged`,
-        status: adminAccountsHygieneStatus,
-        recommendation: getAdminAccountsHygieneRecommendation(),
-        details: {
-          roles: privilegedRoleSummary.roles
-        }
-      },
-      {
-        id: checkDefinitions.guestUsersGovernance.id,
-        title: checkDefinitions.guestUsersGovernance.title,
-        kind: checkDefinitions.guestUsersGovernance.kind,
-        category: checkDefinitions.guestUsersGovernance.category,
-        value: `${guestRatio} %`,
-        status: guestGovernanceStatus,
-        recommendation: getGuestUsersGovernanceRecommendation(
-          guestGovernanceStatus
-        )
-      },
-      {
-        id: checkDefinitions.disabledUsersHygiene.id,
-        title: checkDefinitions.disabledUsersHygiene.title,
-        kind: checkDefinitions.disabledUsersHygiene.kind,
-        category: checkDefinitions.disabledUsersHygiene.category,
-        value: `${disabledUsers.toLocaleString()} disabled / ${disabledRatio} %`,
-        status: disabledHygieneStatus,
-        recommendation: getDisabledUsersHygieneRecommendation()
-      }
-    ]
+    healthScore: calculateHealthScore(checks),
+    checks
   };
 }

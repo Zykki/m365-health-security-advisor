@@ -161,6 +161,10 @@ button {
   margin-top: 0;
 }
 
+.dashboard-header + .health-score-card {
+  margin-top: 0;
+}
+
 .secondary-button {
   background: var(--surface);
   color: var(--foreground);
@@ -174,7 +178,8 @@ button {
 
 .identity-grid article,
 .overview-grid article,
-.security-check-card {
+.security-check-card,
+.health-score-card {
   min-width: 0;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -234,6 +239,76 @@ button {
 .checks-stack {
   display: grid;
   gap: 14px;
+}
+
+.health-score-card {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto minmax(240px, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.health-score-card h2 {
+  font-size: 1.55rem;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.health-score-value {
+  align-items: baseline;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  min-width: 148px;
+  padding: 16px 18px;
+}
+
+.health-score-value strong {
+  font-size: 2.35rem;
+  line-height: 1;
+}
+
+.health-score-value span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.score-ok {
+  background: #e8f5ee;
+  border-color: #a6d8bd;
+  color: #17633a;
+}
+
+.score-warning {
+  background: #fff4d7;
+  border-color: #efcf78;
+  color: #76520c;
+}
+
+.score-critical {
+  background: #ffe5e5;
+  border-color: #f2a7a7;
+  color: #922121;
+}
+
+.health-score-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.health-score-counts span {
+  background: var(--surface);
+  border: 1px solid #d5dde9;
+  border-radius: 999px;
+  color: var(--foreground);
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 8px 10px;
 }
 
 .status-pill {
@@ -326,15 +401,21 @@ button {
 
   .identity-grid,
   .overview-grid,
-  .security-check-card {
+  .security-check-card,
+  .health-score-card {
     grid-template-columns: 1fr;
   }
 
   .dashboard-section,
   .identity-grid article,
   .overview-grid article,
-  .security-check-card {
+  .security-check-card,
+  .health-score-card {
     padding: 18px;
+  }
+
+  .health-score-counts {
+    justify-content: flex-start;
   }
 }
 
