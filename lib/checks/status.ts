@@ -40,3 +40,17 @@ export function getDisabledUsersHygieneStatus(
 
   return "Critical";
 }
+
+export function getMfaRegistrationCoverageStatus(
+  coverage: number
+): CheckStatus {
+  if (coverage >= 95) {
+    return "OK";
+  }
+
+  if (coverage >= 80) {
+    return "Warning";
+  }
+
+  return "Critical";
+}

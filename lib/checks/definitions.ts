@@ -12,6 +12,18 @@ export const checkDefinitions = {
     severity: "Critical",
     source: "Microsoft Graph directoryRoles members"
   },
+  mfaRegistrationCoverage: {
+    id: "SEC-002",
+    title: "MFA Registration Coverage",
+    kind: "Security",
+    category: "Identity",
+    description:
+      "Measures how many users are registered for MFA or strong authentication methods.",
+    recommendation:
+      "Users should register at least one modern MFA method. Admin accounts should use phishing-resistant methods where possible.",
+    severity: "High",
+    source: "Microsoft Graph credentialUserRegistrationDetails"
+  },
   guestUsersGovernance: {
     id: "GOV-001",
     title: "Guest Users Governance",

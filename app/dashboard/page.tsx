@@ -3,6 +3,7 @@ import { auth, signOut } from "@/auth";
 import { DisabledUsersHygieneCheck } from "@/app/dashboard/disabled-users-hygiene-check";
 import { GlobalAdminsCheck } from "@/app/dashboard/global-admins-check";
 import { GuestUsersRatioCheck } from "@/app/dashboard/guest-users-ratio-check";
+import { MfaRegistrationCoverageCheck } from "@/app/dashboard/mfa-registration-coverage-check";
 import { UsersOverview } from "@/app/dashboard/users-overview";
 
 export default async function DashboardPage() {
@@ -50,6 +51,7 @@ export default async function DashboardPage() {
       <GlobalAdminsCheck />
       <GuestUsersRatioCheck />
       <DisabledUsersHygieneCheck />
+      <MfaRegistrationCoverageCheck />
     </main>
   );
 }

@@ -1,5 +1,12 @@
 export type CheckStatus = "OK" | "Warning" | "Critical";
 
+export type CheckSeverity =
+  | "Low"
+  | "Medium"
+  | "High"
+  | "Warning"
+  | "Critical";
+
 export type CheckKind = "Security" | "Governance" | "Hygiene" | "Overview";
 
 export type CheckCategory =
@@ -16,7 +23,7 @@ export type CheckDefinition = {
   category: CheckCategory;
   description: string;
   recommendation: string;
-  severity: CheckStatus;
+  severity: CheckSeverity;
   source: string;
 };
 
