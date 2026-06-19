@@ -1,23 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { checkDefinitions } from "@/lib/checks/definitions";
+import { getGlobalAdminRecommendation } from "@/lib/checks/recommendations";
 import { getGlobalAdminStatus } from "@/lib/checks/status";
-import type { CheckResult, CheckStatus } from "@/lib/checks/types";
+import type { CheckResult } from "@/lib/checks/types";
 import { getGlobalAdminCount } from "@/lib/graph/admins";
 
 const checkDefinition = checkDefinitions.globalAdminCount;
-
-function getGlobalAdminRecommendation(status: CheckStatus) {
-  if (status === "Critical") {
-    return "Add at least two break-glass protected Global Admin accounts.";
-  }
-
-  if (status === "Warning") {
-    return "Keep Global Admin accounts between two and four where possible.";
-  }
-
-  return "Global Admin count is within recommended range.";
-}
 
 export async function GET() {
   const session = await auth();

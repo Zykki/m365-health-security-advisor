@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { checkDefinitions } from "@/lib/checks/definitions";
+import { getDisabledUsersHygieneRecommendation } from "@/lib/checks/recommendations";
 import { getDisabledUsersHygieneStatus } from "@/lib/checks/status";
 import type { CheckResult } from "@/lib/checks/types";
 import {
@@ -43,7 +44,7 @@ export async function GET() {
       category: checkDefinition.category,
       status,
       value: `${disabledUsers} disabled / ${disabledRatio} %`,
-      recommendation: checkDefinition.recommendation,
+      recommendation: getDisabledUsersHygieneRecommendation(),
       details: {
         disabledUsers,
         enabledUsers,

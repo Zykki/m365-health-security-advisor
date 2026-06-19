@@ -1,19 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { checkDefinitions } from "@/lib/checks/definitions";
+import { getMfaRegistrationCoverageRecommendation } from "@/lib/checks/recommendations";
 import { getMfaRegistrationCoverageStatus } from "@/lib/checks/status";
-import type { CheckResult, CheckStatus } from "@/lib/checks/types";
+import type { CheckResult } from "@/lib/checks/types";
 import { getMfaRegistrationCoverage } from "@/lib/graph/authentication-methods";
 
 const checkDefinition = checkDefinitions.mfaRegistrationCoverage;
-
-function getMfaRegistrationCoverageRecommendation(status: CheckStatus) {
-  if (status === "OK") {
-    return checkDefinition.recommendation;
-  }
-
-  return "MFA registration coverage is below the desired target. Continue onboarding users to modern MFA methods.";
-}
 
 function isPermissionError(error: unknown) {
   if (!error || typeof error !== "object") {

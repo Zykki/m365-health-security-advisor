@@ -1,10 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
-import { DisabledUsersHygieneCheck } from "@/app/dashboard/disabled-users-hygiene-check";
-import { GlobalAdminsCheck } from "@/app/dashboard/global-admins-check";
-import { GuestUsersRatioCheck } from "@/app/dashboard/guest-users-ratio-check";
-import { MfaRegistrationCoverageCheck } from "@/app/dashboard/mfa-registration-coverage-check";
-import { UsersOverview } from "@/app/dashboard/users-overview";
+import { DashboardOverviewPanel } from "@/app/dashboard/dashboard-overview";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -14,44 +10,48 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="dashboard-shell">
-      <section className="dashboard-header">
-        <div>
-          <p className="eyebrow">Protected route</p>
-          <h1>Dashboard</h1>
-        </div>
-        <form
-          action={async () => {
-            "use server";
-            await signOut({ redirectTo: "/" });
-          }}
-        >
-          <button type="submit" className="secondary-button">
-            Odhlasit
-          </button>
-        </form>
-      </section>
+    <div className="app-shell">
+      <aside className="app-sidebar" aria-label="Primary navigation">
+        <div className="app-brand">M365 Advisor</div>
+        <nav className="sidebar-nav">
+          <a className="sidebar-link active" href="#overview" aria-current="page">
+            Overview
+          </a>
+          <a className="sidebar-link" href="#security">
+            Security
+          </a>
+          <a className="sidebar-link" href="#governance">
+            Governance
+          </a>
+          <span className="sidebar-link disabled" aria-disabled="true">
+            Reports
+          </span>
+          <span className="sidebar-link disabled" aria-disabled="true">
+            Settings
+          </span>
+        </nav>
+      </aside>
 
-      <section className="identity-grid" aria-label="Prihlaseny pouzivatel">
-        <article>
-          <span>Meno</span>
-          <strong>{session.user.name ?? "Nezname"}</strong>
-        </article>
-        <article>
-          <span>Email</span>
-          <strong>{session.user.email ?? "Neznamy"}</strong>
-        </article>
-        <article>
-          <span>Tenant ID</span>
-          <strong>{session.user.tenantId ?? "Nenajdeny v tokene"}</strong>
-        </article>
-      </section>
+      <main className="dashboard-shell">
+        <section className="dashboard-header">
+          <div>
+            <p className="eyebrow">Protected route</p>
+            <h1>Dashboard</h1>
+          </div>
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/" });
+            }}
+          >
+            <button type="submit" className="secondary-button">
+              Odhlasit
+            </button>
+          </form>
+        </section>
 
-      <UsersOverview />
-      <GlobalAdminsCheck />
-      <GuestUsersRatioCheck />
-      <DisabledUsersHygieneCheck />
-      <MfaRegistrationCoverageCheck />
-    </main>
+        <DashboardOverviewPanel />
+      </main>
+    </div>
   );
 }

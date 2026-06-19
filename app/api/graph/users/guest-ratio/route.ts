@@ -1,19 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { checkDefinitions } from "@/lib/checks/definitions";
+import { getGuestUsersGovernanceRecommendation } from "@/lib/checks/recommendations";
 import { getGuestUsersGovernanceStatus } from "@/lib/checks/status";
-import type { CheckResult, CheckStatus } from "@/lib/checks/types";
+import type { CheckResult } from "@/lib/checks/types";
 import { getGuestCount, getMemberCount } from "@/lib/graph/users";
 
 const checkDefinition = checkDefinitions.guestUsersGovernance;
-
-function getGuestRatioRecommendation(status: CheckStatus) {
-  if (status === "Warning" || status === "Critical") {
-    return "High guest user ratio is not automatically a misconfiguration. It indicates that external access should be reviewed regularly and stale guest accounts should be removed.";
-  }
-
-  return checkDefinition.recommendation;
-}
 
 export async function GET() {
   const session = await auth();
@@ -44,7 +37,7 @@ export async function GET() {
       category: checkDefinition.category,
       status,
       value: `${guestRatio} %`,
-      recommendation: getGuestRatioRecommendation(status),
+      recommendation: getGuestUsersGovernanceRecommendation(status),
       details: {
         guests,
         members,
