@@ -12,6 +12,22 @@ type DashboardOverviewState =
   | { status: "session_expired"; message: string; action: string }
   | { status: "error" };
 
+type SaveScanState = "idle" | "saving" | "saved" | "error";
+
+type RecentScan = {
+  id: string;
+  createdAt: string;
+  healthScore: number;
+  okCount: number;
+  warningCount: number;
+  criticalCount: number;
+};
+
+type RecentScansState =
+  | { status: "loading" }
+  | { status: "loaded"; scans: RecentScan[] }
+  | { status: "error" };
+
 type DashboardErrorPayload = {
   error?: {
     code?: unknown;
@@ -114,6 +130,38 @@ function isSessionExpiredPayload(
   );
 }
 
+function isRecentScan(value: unknown): value is RecentScan {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const scan = value as Record<string, unknown>;
+
+  return (
+    typeof scan.id === "string" &&
+    typeof scan.createdAt === "string" &&
+    typeof scan.healthScore === "number" &&
+    typeof scan.okCount === "number" &&
+    typeof scan.warningCount === "number" &&
+    typeof scan.criticalCount === "number"
+  );
+}
+
+function formatScanDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value));
+}
+
+function formatTrend(value: number) {
+  if (value > 0) {
+    return `+${value}`;
+  }
+
+  return `${value}`;
+}
+
 export function DashboardOverviewPanel() {
   const [state, setState] = useState<DashboardOverviewState>({
     status: "loading"
@@ -121,9 +169,39 @@ export function DashboardOverviewPanel() {
   const [selectedCheck, setSelectedCheck] = useState<DashboardCheck | null>(
     null
   );
+  const [saveScanState, setSaveScanState] = useState<SaveScanState>("idle");
+  const [recentScansState, setRecentScansState] = useState<RecentScansState>({
+    status: "loading"
+  });
 
   useEffect(() => {
     let isMounted = true;
+
+    async function loadRecentScans() {
+      try {
+        const response = await fetch("/api/scans", {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to load scans");
+        }
+
+        const payload = (await response.json()) as unknown;
+
+        if (!Array.isArray(payload) || !payload.every(isRecentScan)) {
+          throw new Error("Invalid scans response");
+        }
+
+        if (isMounted) {
+          setRecentScansState({ status: "loaded", scans: payload });
+        }
+      } catch {
+        if (isMounted) {
+          setRecentScansState({ status: "error" });
+        }
+      }
+    }
 
     async function loadOverview() {
       try {
@@ -163,11 +241,41 @@ export function DashboardOverviewPanel() {
     }
 
     void loadOverview();
+    void loadRecentScans();
 
     return () => {
       isMounted = false;
     };
   }, []);
+
+  async function saveCurrentScan() {
+    setSaveScanState("saving");
+
+    try {
+      const response = await fetch("/api/scans/snapshot", {
+        method: "POST"
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to save scan");
+      }
+
+      setSaveScanState("saved");
+      const scansResponse = await fetch("/api/scans", {
+        cache: "no-store"
+      });
+
+      if (scansResponse.ok) {
+        const scansPayload = (await scansResponse.json()) as unknown;
+
+        if (Array.isArray(scansPayload) && scansPayload.every(isRecentScan)) {
+          setRecentScansState({ status: "loaded", scans: scansPayload });
+        }
+      }
+    } catch {
+      setSaveScanState("error");
+    }
+  }
 
   if (state.status === "error") {
     return <p className="error-message">Unable to load dashboard overview</p>;
@@ -195,6 +303,12 @@ export function DashboardOverviewPanel() {
   const tenant = overview?.tenant;
   const healthScore = overview?.healthScore;
   const quickWins = overview?.quickWins ?? [];
+  const recentScans =
+    recentScansState.status === "loaded" ? recentScansState.scans : [];
+  const latestTrend =
+    recentScans.length >= 2
+      ? recentScans[0].healthScore - recentScans[1].healthScore
+      : null;
   const securityChecks = overview
     ? getChecksById(overview, ["SEC-001", "SEC-002", "SEC-003"])
     : [];
@@ -233,6 +347,22 @@ export function DashboardOverviewPanel() {
             Critical:{" "}
             {state.status === "loading" ? "-" : healthScore?.criticalCount}
           </span>
+        </div>
+        <div className="save-scan-actions">
+          <button
+            type="button"
+            className="save-scan-button"
+            disabled={state.status !== "loaded" || saveScanState === "saving"}
+            onClick={saveCurrentScan}
+          >
+            {saveScanState === "saving" ? "Saving..." : "Save current scan"}
+          </button>
+          {saveScanState === "saved" && (
+            <span className="save-scan-message success">Scan saved</span>
+          )}
+          {saveScanState === "error" && (
+            <span className="save-scan-message error">Unable to save scan</span>
+          )}
         </div>
       </section>
 
@@ -288,6 +418,57 @@ export function DashboardOverviewPanel() {
                 </button>
               );
             })}
+          </div>
+        )}
+      </section>
+
+      <section className="recent-scans-section" aria-labelledby="recent-scans">
+        <div className="section-heading">
+          <p className="eyebrow">Snapshots</p>
+          <h2 id="recent-scans">Recent Scans</h2>
+        </div>
+
+        {recentScansState.status === "loading" ? (
+          <p className="recent-scans-empty">Loading scans...</p>
+        ) : recentScansState.status === "error" ? (
+          <p className="error-message">Unable to load scans</p>
+        ) : recentScans.length === 0 ? (
+          <p className="recent-scans-empty">
+            No scans available. Save your first scan to start tracking progress.
+          </p>
+        ) : (
+          <div className="recent-scans-table" role="table">
+            <div className="recent-scans-row header" role="row">
+              <span role="columnheader">Date</span>
+              <span role="columnheader">Score</span>
+              <span role="columnheader">OK</span>
+              <span role="columnheader">Warning</span>
+              <span role="columnheader">Critical</span>
+            </div>
+            {recentScans.map((scan, index) => (
+              <div className="recent-scans-row" role="row" key={scan.id}>
+                <span role="cell">{formatScanDate(scan.createdAt)}</span>
+                <span role="cell">
+                  {scan.healthScore}
+                  {index === 0 && latestTrend !== null && (
+                    <strong
+                      className={
+                        latestTrend > 0
+                          ? "trend positive"
+                          : latestTrend < 0
+                            ? "trend negative"
+                            : "trend neutral"
+                      }
+                    >
+                      {formatTrend(latestTrend)}
+                    </strong>
+                  )}
+                </span>
+                <span role="cell">{scan.okCount}</span>
+                <span role="cell">{scan.warningCount}</span>
+                <span role="cell">{scan.criticalCount}</span>
+              </div>
+            ))}
           </div>
         )}
       </section>

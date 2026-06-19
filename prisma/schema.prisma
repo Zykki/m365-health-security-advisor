@@ -11,6 +11,7 @@ model Tenant {
   id        String    @id
   name      String?
   users     AppUser[]
+  scans     Scan[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -53,4 +54,34 @@ model Session {
   userId       String
   user         AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
   expires      DateTime
+}
+
+model Scan {
+  id            String        @id @default(cuid())
+  tenantId      String
+  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  healthScore   Int
+  okCount       Int
+  warningCount  Int
+  criticalCount Int
+  rawJson       Json
+  checkResults  CheckResult[]
+
+  @@index([tenantId, createdAt])
+}
+
+model CheckResult {
+  id             String   @id @default(cuid())
+  scanId         String
+  scan           Scan     @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  checkId        String
+  title          String
+  status         String
+  value          String
+  recommendation String   @db.Text
+  createdAt      DateTime @default(now())
+
+  @@index([scanId])
+  @@index([checkId])
 }
