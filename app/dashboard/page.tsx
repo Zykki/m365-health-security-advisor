@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
+import { GlobalAdminsCheck } from "@/app/dashboard/global-admins-check";
 import { UsersOverview } from "@/app/dashboard/users-overview";
 
 export default async function DashboardPage() {
@@ -44,6 +45,7 @@ export default async function DashboardPage() {
       </section>
 
       <UsersOverview />
+      <GlobalAdminsCheck />
     </main>
   );
 }
