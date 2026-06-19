@@ -15,6 +15,7 @@ import {
   getMfaRegistrationCoverageStatus
 } from "@/lib/checks/status";
 import type { CheckCategory, CheckKind, CheckStatus } from "@/lib/checks/types";
+import type { CheckDefinition } from "@/lib/checks/types";
 import { getPrivilegedRoleMemberSummary } from "@/lib/graph/admins";
 import { getMfaRegistrationCoverage } from "@/lib/graph/authentication-methods";
 import {
@@ -42,6 +43,11 @@ export type DashboardCheck = {
   whyItMatters: string;
   recommendation: string;
   howToFix: string;
+  securityImpact: CheckDefinition["securityImpact"];
+  operationalImpact: CheckDefinition["operationalImpact"];
+  estimatedEffortMinutes: number;
+  licenseRequired: string;
+  source: string;
   details?: Record<string, unknown>;
 };
 
@@ -62,6 +68,16 @@ export type DashboardOverview = {
   };
   checks: DashboardCheck[];
 };
+
+function getCheckMetadata(definition: CheckDefinition) {
+  return {
+    securityImpact: definition.securityImpact,
+    operationalImpact: definition.operationalImpact,
+    estimatedEffortMinutes: definition.estimatedEffortMinutes,
+    licenseRequired: definition.licenseRequired,
+    source: definition.source
+  };
+}
 
 export async function getDashboardOverview(
   accessToken: string,
@@ -119,7 +135,8 @@ export async function getDashboardOverview(
       description: checkDefinitions.globalAdminCount.description,
       whyItMatters: checkDefinitions.globalAdminCount.whyItMatters,
       recommendation: getGlobalAdminRecommendation(globalAdminStatus),
-      howToFix: checkDefinitions.globalAdminCount.howToFix
+      howToFix: checkDefinitions.globalAdminCount.howToFix,
+      ...getCheckMetadata(checkDefinitions.globalAdminCount)
     },
     {
       id: checkDefinitions.mfaRegistrationCoverage.id,
@@ -131,7 +148,8 @@ export async function getDashboardOverview(
       description: checkDefinitions.mfaRegistrationCoverage.description,
       whyItMatters: checkDefinitions.mfaRegistrationCoverage.whyItMatters,
       recommendation: getMfaRegistrationCoverageRecommendation(mfaStatus),
-      howToFix: checkDefinitions.mfaRegistrationCoverage.howToFix
+      howToFix: checkDefinitions.mfaRegistrationCoverage.howToFix,
+      ...getCheckMetadata(checkDefinitions.mfaRegistrationCoverage)
     },
     {
       id: checkDefinitions.adminAccountsHygiene.id,
@@ -144,6 +162,7 @@ export async function getDashboardOverview(
       whyItMatters: checkDefinitions.adminAccountsHygiene.whyItMatters,
       recommendation: getAdminAccountsHygieneRecommendation(),
       howToFix: checkDefinitions.adminAccountsHygiene.howToFix,
+      ...getCheckMetadata(checkDefinitions.adminAccountsHygiene),
       details: {
         roles: privilegedRoleSummary.roles
       }
@@ -160,7 +179,8 @@ export async function getDashboardOverview(
       recommendation: getGuestUsersGovernanceRecommendation(
         guestGovernanceStatus
       ),
-      howToFix: checkDefinitions.guestUsersGovernance.howToFix
+      howToFix: checkDefinitions.guestUsersGovernance.howToFix,
+      ...getCheckMetadata(checkDefinitions.guestUsersGovernance)
     },
     {
       id: checkDefinitions.disabledUsersHygiene.id,
@@ -172,7 +192,8 @@ export async function getDashboardOverview(
       description: checkDefinitions.disabledUsersHygiene.description,
       whyItMatters: checkDefinitions.disabledUsersHygiene.whyItMatters,
       recommendation: getDisabledUsersHygieneRecommendation(),
-      howToFix: checkDefinitions.disabledUsersHygiene.howToFix
+      howToFix: checkDefinitions.disabledUsersHygiene.howToFix,
+      ...getCheckMetadata(checkDefinitions.disabledUsersHygiene)
     }
   ];
 

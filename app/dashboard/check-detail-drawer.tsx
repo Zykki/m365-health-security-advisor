@@ -81,6 +81,31 @@ export function CheckDetailDrawer({ check, onClose }: CheckDetailDrawerProps) {
           <h3>How to fix</h3>
           <p>{check.howToFix}</p>
         </div>
+        <div className="drawer-section">
+          <h3>Metadata</h3>
+          <dl className="metadata-grid">
+            <div>
+              <dt>Security Impact</dt>
+              <dd>{check.securityImpact}</dd>
+            </div>
+            <div>
+              <dt>Operational Impact</dt>
+              <dd>{check.operationalImpact}</dd>
+            </div>
+            <div>
+              <dt>Estimated Effort</dt>
+              <dd>{check.estimatedEffortMinutes} minutes</dd>
+            </div>
+            <div>
+              <dt>License Required</dt>
+              <dd>{check.licenseRequired}</dd>
+            </div>
+            <div>
+              <dt>Source</dt>
+              <dd>{check.source}</dd>
+            </div>
+          </dl>
+        </div>
       </aside>
     </div>
   );

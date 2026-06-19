@@ -7,6 +7,10 @@ export type CheckSeverity =
   | "Warning"
   | "Critical";
 
+export type SecurityImpact = "Low" | "Medium" | "High" | "Critical";
+
+export type OperationalImpact = "Low" | "Medium" | "High";
+
 export type CheckKind = "Security" | "Governance" | "Hygiene" | "Overview";
 
 export type CheckCategory =
@@ -26,6 +30,10 @@ export type CheckDefinition = {
   recommendation: string;
   howToFix: string;
   severity: CheckSeverity;
+  securityImpact: SecurityImpact;
+  operationalImpact: OperationalImpact;
+  estimatedEffortMinutes: number;
+  licenseRequired: string;
   source: string;
 };
 

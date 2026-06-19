@@ -14,7 +14,11 @@ export const checkDefinitions = {
     howToFix:
       "Review Global Administrator assignments, remove unnecessary accounts, and keep at least two protected break-glass admins.",
     severity: "Critical",
-    source: "Microsoft Graph directoryRoles members"
+    securityImpact: "Critical",
+    operationalImpact: "Low",
+    estimatedEffortMinutes: 30,
+    licenseRequired: "Microsoft 365 Business Standard or higher",
+    source: "Microsoft Entra ID roles"
   },
   mfaRegistrationCoverage: {
     id: "SEC-002",
@@ -30,6 +34,10 @@ export const checkDefinitions = {
     howToFix:
       "Run MFA registration campaigns and prioritize administrators and high-risk users.",
     severity: "High",
+    securityImpact: "Critical",
+    operationalImpact: "Medium",
+    estimatedEffortMinutes: 60,
+    licenseRequired: "Microsoft 365 Business Standard or higher",
     source: "Microsoft Graph credentialUserRegistrationDetails"
   },
   adminAccountsHygiene: {
@@ -45,7 +53,11 @@ export const checkDefinitions = {
     howToFix:
       "Audit privileged role membership, remove stale assignments, and document required admin accounts.",
     severity: "High",
-    source: "Microsoft Graph directoryRoles members"
+    securityImpact: "High",
+    operationalImpact: "Low",
+    estimatedEffortMinutes: 45,
+    licenseRequired: "Microsoft 365 Business Standard or higher",
+    source: "Microsoft Entra ID directory roles"
   },
   guestUsersGovernance: {
     id: "GOV-001",
@@ -60,7 +72,11 @@ export const checkDefinitions = {
     howToFix:
       "Review external users, remove stale guests, and ensure ownership for collaboration workspaces.",
     severity: "Warning",
-    source: "Microsoft Graph users userType"
+    securityImpact: "Medium",
+    operationalImpact: "Low",
+    estimatedEffortMinutes: 30,
+    licenseRequired: "Microsoft 365 Business Standard or higher",
+    source: "Microsoft Entra ID users"
   },
   disabledUsersHygiene: {
     id: "HYG-001",
@@ -76,7 +92,11 @@ export const checkDefinitions = {
     howToFix:
       "Review disabled accounts periodically, delete accounts no longer needed, and document exceptions.",
     severity: "Warning",
-    source: "Microsoft Graph users accountEnabled"
+    securityImpact: "Medium",
+    operationalImpact: "Low",
+    estimatedEffortMinutes: 20,
+    licenseRequired: "Microsoft 365 Business Standard or higher",
+    source: "Microsoft Entra ID users"
   }
 } satisfies Record<string, CheckDefinition>;
 
