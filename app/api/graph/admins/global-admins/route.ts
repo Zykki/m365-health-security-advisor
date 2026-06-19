@@ -1,22 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { checkDefinitions } from "@/lib/checks/definitions";
+import { getGlobalAdminStatus } from "@/lib/checks/status";
+import type { CheckResult, CheckStatus } from "@/lib/checks/types";
 import { getGlobalAdminCount } from "@/lib/graph/admins";
 
-type GlobalAdminStatus = "OK" | "Warning" | "Critical";
+const checkDefinition = checkDefinitions.globalAdminCount;
 
-function getGlobalAdminStatus(count: number): GlobalAdminStatus {
-  if (count === 0) {
-    return "Critical";
-  }
-
-  if (count === 1 || count >= 5) {
-    return "Warning";
-  }
-
-  return "OK";
-}
-
-function getGlobalAdminRecommendation(status: GlobalAdminStatus) {
+function getGlobalAdminRecommendation(status: CheckStatus) {
   if (status === "Critical") {
     return "Add at least two break-glass protected Global Admin accounts.";
   }
@@ -45,11 +36,23 @@ export async function GET() {
   try {
     const count = await getGlobalAdminCount(session.accessToken);
     const status = getGlobalAdminStatus(count);
+    const result: CheckResult = {
+      checkId: checkDefinition.id,
+      title: checkDefinition.title,
+      kind: checkDefinition.kind,
+      category: checkDefinition.category,
+      status,
+      value: count,
+      recommendation: getGlobalAdminRecommendation(status),
+      details: {
+        source: checkDefinition.source
+      }
+    };
 
     return NextResponse.json({
       count,
-      status,
-      recommendation: getGlobalAdminRecommendation(status)
+      status: result.status,
+      recommendation: result.recommendation
     });
   } catch (error) {
     console.error("Unable to load Microsoft Graph Global Admin count", error);

@@ -1,27 +1,18 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { checkDefinitions } from "@/lib/checks/definitions";
+import { getGuestUsersGovernanceStatus } from "@/lib/checks/status";
+import type { CheckResult, CheckStatus } from "@/lib/checks/types";
 import { getGuestCount, getMemberCount } from "@/lib/graph/users";
 
-type GuestRatioStatus = "OK" | "Warning" | "Critical";
+const checkDefinition = checkDefinitions.guestUsersGovernance;
 
-function getGuestRatioStatus(guestRatio: number): GuestRatioStatus {
-  if (guestRatio <= 10) {
-    return "OK";
-  }
-
-  if (guestRatio <= 25) {
-    return "Warning";
-  }
-
-  return "Critical";
-}
-
-function getGuestRatioRecommendation(status: GuestRatioStatus) {
+function getGuestRatioRecommendation(status: CheckStatus) {
   if (status === "Warning" || status === "Critical") {
     return "High guest user ratio is not automatically a misconfiguration. It indicates that external access should be reviewed regularly and stale guest accounts should be removed.";
   }
 
-  return "Guest users are within the recommended range.";
+  return checkDefinition.recommendation;
 }
 
 export async function GET() {
@@ -45,14 +36,28 @@ export async function GET() {
     ]);
     const total = members + guests;
     const guestRatio = total === 0 ? 0 : Math.round((guests / total) * 100);
-    const status = getGuestRatioStatus(guestRatio);
+    const status = getGuestUsersGovernanceStatus(guestRatio);
+    const result: CheckResult = {
+      checkId: checkDefinition.id,
+      title: checkDefinition.title,
+      kind: checkDefinition.kind,
+      category: checkDefinition.category,
+      status,
+      value: `${guestRatio} %`,
+      recommendation: getGuestRatioRecommendation(status),
+      details: {
+        guests,
+        members,
+        source: checkDefinition.source
+      }
+    };
 
     return NextResponse.json({
       guests,
       members,
       guestRatio,
-      status,
-      recommendation: getGuestRatioRecommendation(status)
+      status: result.status,
+      recommendation: result.recommendation
     });
   } catch (error) {
     console.error("Unable to load Microsoft Graph Guest Users Ratio", error);

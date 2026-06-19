@@ -1,30 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { checkDefinitions } from "@/lib/checks/definitions";
+import { getDisabledUsersHygieneStatus } from "@/lib/checks/status";
+import type { CheckResult } from "@/lib/checks/types";
 import {
   getDisabledUserCount,
   getEnabledUserCount
 } from "@/lib/graph/users";
 
-type DisabledHygieneStatus = "OK" | "Warning" | "Critical";
-
-function getDisabledHygieneStatus(
-  disabledUsers: number,
-  disabledRatio: number
-): DisabledHygieneStatus {
-  if (disabledUsers === 0 || disabledRatio <= 5) {
-    return "OK";
-  }
-
-  if (disabledRatio <= 15) {
-    return "Warning";
-  }
-
-  return "Critical";
-}
-
-function getDisabledHygieneRecommendation() {
-  return "Disabled accounts should be reviewed regularly. Remove accounts that are no longer needed or document why they must remain disabled.";
-}
+const checkDefinition = checkDefinitions.disabledUsersHygiene;
 
 export async function GET() {
   const session = await auth();
@@ -48,14 +32,31 @@ export async function GET() {
     const total = enabledUsers + disabledUsers;
     const disabledRatio =
       total === 0 ? 0 : Math.round((disabledUsers / total) * 100);
-    const status = getDisabledHygieneStatus(disabledUsers, disabledRatio);
+    const status = getDisabledUsersHygieneStatus(
+      disabledUsers,
+      disabledRatio
+    );
+    const result: CheckResult = {
+      checkId: checkDefinition.id,
+      title: checkDefinition.title,
+      kind: checkDefinition.kind,
+      category: checkDefinition.category,
+      status,
+      value: `${disabledUsers} disabled / ${disabledRatio} %`,
+      recommendation: checkDefinition.recommendation,
+      details: {
+        disabledUsers,
+        enabledUsers,
+        source: checkDefinition.source
+      }
+    };
 
     return NextResponse.json({
       disabledUsers,
       enabledUsers,
       disabledRatio,
-      status,
-      recommendation: getDisabledHygieneRecommendation()
+      status: result.status,
+      recommendation: result.recommendation
     });
   } catch (error) {
     console.error("Unable to load Microsoft Graph Disabled Users Hygiene", error);
