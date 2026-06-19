@@ -54,6 +54,7 @@ function isDashboardOverview(value: unknown): value is DashboardOverview {
     !!users &&
     !!healthScore &&
     Array.isArray(payload.checks) &&
+    Array.isArray(payload.quickWins) &&
     userMetrics.every(({ key }) => typeof users[key] === "number") &&
     typeof healthScore.score === "number" &&
     typeof healthScore.okCount === "number" &&
@@ -193,6 +194,7 @@ export function DashboardOverviewPanel() {
   const overview = state.status === "loaded" ? state.overview : null;
   const tenant = overview?.tenant;
   const healthScore = overview?.healthScore;
+  const quickWins = overview?.quickWins ?? [];
   const securityChecks = overview
     ? getChecksById(overview, ["SEC-001", "SEC-002", "SEC-003"])
     : [];
@@ -232,6 +234,62 @@ export function DashboardOverviewPanel() {
             {state.status === "loading" ? "-" : healthScore?.criticalCount}
           </span>
         </div>
+      </section>
+
+      <section className="quick-wins-section" aria-labelledby="quick-wins">
+        <div className="section-heading">
+          <p className="eyebrow">Prioritized Actions</p>
+          <h2 id="quick-wins">Quick Wins</h2>
+        </div>
+
+        {state.status === "loading" ? (
+          <div className="quick-wins-grid">
+            {["Quick win 1", "Quick win 2", "Quick win 3"].map((title) => (
+              <article className="quick-win-card" key={title}>
+                <span>Loading...</span>
+              </article>
+            ))}
+          </div>
+        ) : quickWins.length === 0 ? (
+          <p className="quick-wins-empty">
+            No quick wins found. All high-impact checks are currently OK.
+          </p>
+        ) : (
+          <div className="quick-wins-grid">
+            {quickWins.map((quickWin) => {
+              const check = overview?.checks.find(
+                (candidate) => candidate.id === quickWin.id
+              );
+
+              return (
+                <button
+                  className="quick-win-card"
+                  key={quickWin.id}
+                  type="button"
+                  onClick={() => {
+                    if (check) {
+                      setSelectedCheck(check);
+                    }
+                  }}
+                >
+                  <div className="quick-win-header">
+                    <h3>{quickWin.title}</h3>
+                    <span
+                      className={`status-pill status-${quickWin.status.toLowerCase()}`}
+                    >
+                      {quickWin.status}
+                    </span>
+                  </div>
+                  <div className="quick-win-meta">
+                    <span>{quickWin.estimatedEffortMinutes} min</span>
+                    <span>{quickWin.securityImpact} impact</span>
+                  </div>
+                  <p>{quickWin.recommendation}</p>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section

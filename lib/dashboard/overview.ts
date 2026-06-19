@@ -7,6 +7,8 @@ import {
   getMfaRegistrationCoverageRecommendation
 } from "@/lib/checks/recommendations";
 import { calculateHealthScore } from "@/lib/checks/scoring";
+import { getQuickWins } from "@/lib/checks/quick-wins";
+import type { QuickWin } from "@/lib/checks/quick-wins";
 import {
   getAdminAccountsHygieneStatus,
   getDisabledUsersHygieneStatus,
@@ -66,6 +68,7 @@ export type DashboardOverview = {
     warningCount: number;
     criticalCount: number;
   };
+  quickWins: QuickWin[];
   checks: DashboardCheck[];
 };
 
@@ -207,6 +210,7 @@ export async function getDashboardOverview(
       disabled: disabledUsers
     },
     healthScore: calculateHealthScore(checks),
+    quickWins: getQuickWins(checks),
     checks
   };
 }

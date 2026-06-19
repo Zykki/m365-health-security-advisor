@@ -267,6 +267,84 @@ button {
   margin-top: 24px;
 }
 
+.quick-wins-section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 24px;
+  padding: var(--card-padding);
+}
+
+.quick-wins-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.quick-win-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--foreground);
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: 14px;
+  min-height: 190px;
+  padding: var(--card-padding);
+  text-align: left;
+}
+
+.quick-win-card:focus-visible {
+  outline: 3px solid #9fc7e8;
+  outline-offset: 3px;
+}
+
+.quick-win-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.quick-win-header h3 {
+  font-size: 1rem;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.quick-win-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-win-meta span {
+  background: var(--surface);
+  border: 1px solid #d5dde9;
+  border-radius: 999px;
+  color: var(--foreground);
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 6px 8px;
+}
+
+.quick-win-card p {
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.quick-wins-empty {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 700;
+  margin: 0;
+  padding: 18px;
+}
+
 .health-score-card h2 {
   font-size: 1.55rem;
   line-height: 1.2;
@@ -519,6 +597,7 @@ button {
 
   .identity-grid,
   .overview-grid,
+  .quick-wins-grid,
   .security-check-card,
   .health-score-card {
     grid-template-columns: 1fr;
@@ -527,6 +606,8 @@ button {
   .dashboard-section,
   .identity-grid article,
   .overview-grid article,
+  .quick-wins-section,
+  .quick-win-card,
   .security-check-card,
   .health-score-card {
     padding: 18px;
