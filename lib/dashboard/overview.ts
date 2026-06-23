@@ -1,4 +1,5 @@
 import { checkDefinitions } from "@/lib/checks/definitions";
+import { assessLegacyAuthenticationExposure } from "@/lib/checks/legacy-auth-assessment";
 import {
   getAdminAccountsHygieneRecommendation,
   getAdminMfaCoverageRecommendation,
@@ -7,6 +8,7 @@ import {
   getDisabledUsersHygieneRecommendation,
   getGlobalAdminRecommendation,
   getGuestUsersGovernanceRecommendation,
+  getLegacyAuthenticationRecommendation,
   getMfaRegistrationCoverageRecommendation
 } from "@/lib/checks/recommendations";
 import { calculateHealthScore } from "@/lib/checks/scoring";
@@ -20,6 +22,7 @@ import {
   getDisabledUsersHygieneStatus,
   getGlobalAdminStatus,
   getGuestUsersGovernanceStatus,
+  getLegacyAuthenticationStatusResult,
   getMfaRegistrationCoverageStatus
 } from "@/lib/checks/status";
 import type { CheckCategory, CheckKind, CheckStatus } from "@/lib/checks/types";
@@ -32,7 +35,12 @@ import {
   getAdminMfaCoverage,
   getMfaRegistrationCoverage
 } from "@/lib/graph/authentication-methods";
-import { getConditionalAccessBaseline } from "@/lib/graph/conditional-access";
+import {
+  getConditionalAccessBaseline,
+  getLegacyAuthConditionalAccessEvidence
+} from "@/lib/graph/conditional-access";
+import { getLegacyAuthSecureScoreEvidence } from "@/lib/graph/secure-score";
+import { getSecurityDefaultsStatus } from "@/lib/graph/security-defaults";
 import {
   getDisabledUserCount,
   getEnabledUserCount,
@@ -108,6 +116,9 @@ export async function getDashboardOverview(
     privilegedRoleSummary,
     breakGlassCandidateSummary,
     adminMfaCoverage,
+    securityDefaultsStatus,
+    legacyAuthConditionalAccessEvidence,
+    legacyAuthSecureScoreEvidence,
     conditionalAccessBaseline,
     mfaCoverage
   ] = await Promise.all([
@@ -119,6 +130,9 @@ export async function getDashboardOverview(
     getPrivilegedRoleMemberSummary(accessToken),
     getBreakGlassCandidates(accessToken),
     getAdminMfaCoverage(accessToken),
+    getSecurityDefaultsStatus(accessToken),
+    getLegacyAuthConditionalAccessEvidence(accessToken),
+    getLegacyAuthSecureScoreEvidence(accessToken),
     getConditionalAccessBaseline(accessToken),
     getMfaRegistrationCoverage(accessToken)
   ]);
@@ -147,6 +161,14 @@ export async function getDashboardOverview(
   const adminMfaCoverageStatus = getAdminMfaCoverageStatus(
     adminMfaCoverage.coverage,
     adminMfaCoverage.totalAdmins
+  );
+  const legacyAuthenticationAssessment = assessLegacyAuthenticationExposure({
+    securityDefaults: securityDefaultsStatus,
+    conditionalAccess: legacyAuthConditionalAccessEvidence,
+    secureScore: legacyAuthSecureScoreEvidence
+  });
+  const legacyAuthenticationCheckStatus = getLegacyAuthenticationStatusResult(
+    legacyAuthenticationAssessment.exposure
   );
   const conditionalAccessBaselineStatus = getConditionalAccessBaselineStatus(
     conditionalAccessBaseline.totalPolicies,
@@ -241,6 +263,44 @@ export async function getDashboardOverview(
         registeredAdmins: adminMfaCoverage.registeredAdmins,
         unregisteredAdmins: adminMfaCoverage.unregisteredAdmins,
         coverage: adminMfaCoverage.coverage
+      }
+    },
+    {
+      id: checkDefinitions.legacyAuthentication.id,
+      title: checkDefinitions.legacyAuthentication.title,
+      kind: checkDefinitions.legacyAuthentication.kind,
+      category: checkDefinitions.legacyAuthentication.category,
+      value:
+        legacyAuthenticationAssessment.exposure === "Unknown"
+          ? "Unknown"
+          : `${legacyAuthenticationAssessment.exposure} Exposure`,
+      status: legacyAuthenticationCheckStatus,
+      description: checkDefinitions.legacyAuthentication.description,
+      whyItMatters: checkDefinitions.legacyAuthentication.whyItMatters,
+      recommendation: getLegacyAuthenticationRecommendation(
+        legacyAuthenticationCheckStatus
+      ),
+      howToFix: checkDefinitions.legacyAuthentication.howToFix,
+      ...getCheckMetadata(checkDefinitions.legacyAuthentication),
+      details: {
+        securityDefaults:
+          securityDefaultsStatus.enabled === true
+            ? "Enabled"
+            : securityDefaultsStatus.enabled === false
+              ? "Disabled"
+              : "Unknown",
+        conditionalAccess: legacyAuthConditionalAccessEvidence.detected
+          ? "Detected"
+          : "Not Detected",
+        secureScore:
+          legacyAuthSecureScoreEvidence.implemented === true
+            ? "Implemented"
+            : legacyAuthSecureScoreEvidence.implemented === false
+              ? "Not Implemented"
+              : "Unknown",
+        evidence: legacyAuthenticationAssessment.evidence,
+        matchingConditionalAccessPolicies:
+          legacyAuthConditionalAccessEvidence.matchingPolicies
       }
     },
     {

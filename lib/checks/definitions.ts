@@ -100,6 +100,26 @@ export const checkDefinitions = {
     source:
       "Microsoft Graph credentialUserRegistrationDetails and Entra ID directory roles"
   },
+  legacyAuthentication: {
+    id: "SEC-006",
+    title: "Legacy Authentication Exposure",
+    kind: "Security",
+    category: "Identity",
+    description:
+      "Assesses the tenant exposure to legacy authentication using multiple Microsoft 365 security signals.",
+    whyItMatters:
+      "Legacy authentication protocols bypass modern protections such as MFA and are frequently used in password spray attacks.",
+    recommendation:
+      "Reduce legacy authentication exposure using Security Defaults, Conditional Access policies and modern authentication controls.",
+    howToFix:
+      "1. Enable Security Defaults or Conditional Access. 2. Block legacy client protocols. 3. Review Secure Score recommendations. 4. Validate application compatibility. 5. Monitor authentication activity.",
+    severity: "Critical",
+    securityImpact: "Critical",
+    operationalImpact: "Medium",
+    estimatedEffortMinutes: 60,
+    licenseRequired: "Microsoft 365 Business Premium or Entra ID P1",
+    source: "Graph + Conditional Access + Secure Score"
+  },
   conditionalAccessBaseline: {
     id: "SEC-007",
     title: "Conditional Access Baseline",

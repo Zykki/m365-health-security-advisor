@@ -135,12 +135,14 @@ Required delegated permissions:
 - `Directory.Read.All`
 - `Reports.Read.All`
 - `Policy.Read.All`
+- `SecurityEvents.Read.All`
 
 Permission notes:
 
 - `Directory.Read.All` is used for users, directory roles, and privileged admin checks.
 - `Reports.Read.All` is used by MFA Registration Coverage through Microsoft Graph reporting data.
-- `Policy.Read.All` is used to read Conditional Access policy baseline counts.
+- `Policy.Read.All` is used to read Conditional Access policy baseline counts and authentication policy signals.
+- `SecurityEvents.Read.All` is used to read Secure Score signals for legacy authentication exposure assessment.
 - Some permissions usually require admin consent in the tenant.
 - No Application permissions are required for Release 0.1.
 

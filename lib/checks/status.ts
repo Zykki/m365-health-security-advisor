@@ -1,3 +1,4 @@
+import type { LegacyAuthenticationExposure } from "@/lib/checks/legacy-auth-assessment";
 import type { CheckStatus } from "@/lib/checks/types";
 
 export function getGlobalAdminStatus(count: number): CheckStatus {
@@ -118,4 +119,18 @@ export function getConditionalAccessBaselineStatus(
   }
 
   return "OK";
+}
+
+export function getLegacyAuthenticationStatusResult(
+  exposure: LegacyAuthenticationExposure
+): CheckStatus {
+  if (exposure === "Low") {
+    return "OK";
+  }
+
+  if (exposure === "High") {
+    return "Critical";
+  }
+
+  return "Warning";
 }

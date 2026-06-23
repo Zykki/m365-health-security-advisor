@@ -386,6 +386,7 @@ export function DashboardOverviewPanel() {
         "SEC-003",
         "SEC-004",
         "SEC-005",
+        "SEC-006",
         "SEC-007"
       ])
     : [];
@@ -628,6 +629,7 @@ export function DashboardOverviewPanel() {
                 "Admin Accounts Hygiene",
                 "Break Glass Accounts",
                 "Admin MFA Coverage",
+                "Legacy Authentication Exposure",
                 "Conditional Access Baseline"
               ].map((title) => (
                 <SecurityCheckCard key={title} title={title} loading />

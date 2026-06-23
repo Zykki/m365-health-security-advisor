@@ -74,3 +74,15 @@ export function getConditionalAccessBaselineRecommendation(
 
   return checkDefinitions.conditionalAccessBaseline.recommendation;
 }
+
+export function getLegacyAuthenticationRecommendation(status: CheckStatus) {
+  if (status === "OK") {
+    return checkDefinitions.legacyAuthentication.recommendation;
+  }
+
+  if (status === "Critical") {
+    return "Legacy authentication exposure appears high. Enable Security Defaults or deploy Conditional Access policies that block legacy client protocols.";
+  }
+
+  return "Legacy authentication exposure is not fully resolved by the available signals. Review Security Defaults, Conditional Access policies and Secure Score recommendations.";
+}
