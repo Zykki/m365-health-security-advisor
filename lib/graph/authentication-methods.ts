@@ -1,7 +1,9 @@
 import { createGraphClient } from "@/lib/graph/client";
+import { getPrivilegedAdminUsers } from "@/lib/graph/admins";
 
 type CredentialUserRegistrationDetail = {
   id?: string;
+  userPrincipalName?: string;
   isMfaRegistered?: boolean;
 };
 
@@ -16,13 +18,17 @@ export type MfaRegistrationCoverage = {
   registrationCoverage: number;
 };
 
-export async function getMfaRegistrationCoverage(
-  accessToken: string
-): Promise<MfaRegistrationCoverage> {
+export type AdminMfaCoverage = {
+  totalAdmins: number;
+  registeredAdmins: number;
+  unregisteredAdmins: number;
+  coverage: number;
+};
+
+async function getCredentialUserRegistrationDetails(accessToken: string) {
   const client = createGraphClient(accessToken);
   let requestUrl = "/reports/credentialUserRegistrationDetails";
-  let totalUsers = 0;
-  let registeredUsers = 0;
+  const details: CredentialUserRegistrationDetail[] = [];
 
   while (requestUrl) {
     const request = client.api(requestUrl);
@@ -33,17 +39,68 @@ export async function getMfaRegistrationCoverage(
 
     const response =
       (await request.get()) as CredentialUserRegistrationDetailsResponse;
-    const users = response.value ?? [];
 
-    totalUsers += users.length;
-    registeredUsers += users.filter((user) => user.isMfaRegistered).length;
+    details.push(...(response.value ?? []));
     requestUrl = response["@odata.nextLink"] ?? "";
   }
+
+  return details;
+}
+
+export async function getMfaRegistrationCoverage(
+  accessToken: string
+): Promise<MfaRegistrationCoverage> {
+  const users = await getCredentialUserRegistrationDetails(accessToken);
+  const totalUsers = users.length;
+  const registeredUsers = users.filter((user) => user.isMfaRegistered).length;
 
   return {
     totalUsers,
     registeredUsers,
     registrationCoverage:
       totalUsers === 0 ? 0 : Math.round((registeredUsers / totalUsers) * 100)
+  };
+}
+
+export async function getAdminMfaCoverage(
+  accessToken: string
+): Promise<AdminMfaCoverage> {
+  const [adminUsers, registrationDetails] = await Promise.all([
+    getPrivilegedAdminUsers(accessToken),
+    getCredentialUserRegistrationDetails(accessToken)
+  ]);
+  const registrationById = new Map(
+    registrationDetails
+      .filter((detail) => detail.id)
+      .map((detail) => [detail.id?.toLowerCase() ?? "", detail])
+  );
+  const registrationByUserPrincipalName = new Map(
+    registrationDetails
+      .filter((detail) => detail.userPrincipalName)
+      .map((detail) => [
+        detail.userPrincipalName?.toLowerCase() ?? "",
+        detail
+      ])
+  );
+  const totalAdmins = adminUsers.length;
+  const registeredAdmins = adminUsers.filter((admin) => {
+    const registration =
+      registrationById.get(admin.id.toLowerCase()) ??
+      registrationByUserPrincipalName.get(
+        admin.userPrincipalName.toLowerCase()
+      );
+
+    return Boolean(registration?.isMfaRegistered);
+  }).length;
+  const unregisteredAdmins = totalAdmins - registeredAdmins;
+
+  return {
+    totalAdmins,
+    registeredAdmins,
+    unregisteredAdmins,
+    coverage:
+      totalAdmins === 0
+        ? 0
+        : Math.round((registeredAdmins / totalAdmins) * 100)
   };
 }

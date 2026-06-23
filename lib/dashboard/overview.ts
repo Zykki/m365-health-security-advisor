@@ -1,7 +1,9 @@
 import { checkDefinitions } from "@/lib/checks/definitions";
 import {
   getAdminAccountsHygieneRecommendation,
+  getAdminMfaCoverageRecommendation,
   getBreakGlassAccountsRecommendation,
+  getConditionalAccessBaselineRecommendation,
   getDisabledUsersHygieneRecommendation,
   getGlobalAdminRecommendation,
   getGuestUsersGovernanceRecommendation,
@@ -12,7 +14,9 @@ import { getQuickWins } from "@/lib/checks/quick-wins";
 import type { QuickWin } from "@/lib/checks/quick-wins";
 import {
   getAdminAccountsHygieneStatus,
+  getAdminMfaCoverageStatus,
   getBreakGlassAccountsStatus,
+  getConditionalAccessBaselineStatus,
   getDisabledUsersHygieneStatus,
   getGlobalAdminStatus,
   getGuestUsersGovernanceStatus,
@@ -24,7 +28,11 @@ import {
   getBreakGlassCandidates,
   getPrivilegedRoleMemberSummary
 } from "@/lib/graph/admins";
-import { getMfaRegistrationCoverage } from "@/lib/graph/authentication-methods";
+import {
+  getAdminMfaCoverage,
+  getMfaRegistrationCoverage
+} from "@/lib/graph/authentication-methods";
+import { getConditionalAccessBaseline } from "@/lib/graph/conditional-access";
 import {
   getDisabledUserCount,
   getEnabledUserCount,
@@ -99,6 +107,8 @@ export async function getDashboardOverview(
     disabledUsers,
     privilegedRoleSummary,
     breakGlassCandidateSummary,
+    adminMfaCoverage,
+    conditionalAccessBaseline,
     mfaCoverage
   ] = await Promise.all([
     getUserCount(accessToken),
@@ -108,6 +118,8 @@ export async function getDashboardOverview(
     getDisabledUserCount(accessToken),
     getPrivilegedRoleMemberSummary(accessToken),
     getBreakGlassCandidates(accessToken),
+    getAdminMfaCoverage(accessToken),
+    getConditionalAccessBaseline(accessToken),
     getMfaRegistrationCoverage(accessToken)
   ]);
 
@@ -131,6 +143,14 @@ export async function getDashboardOverview(
   );
   const breakGlassAccountsStatus = getBreakGlassAccountsStatus(
     breakGlassCandidateSummary.count
+  );
+  const adminMfaCoverageStatus = getAdminMfaCoverageStatus(
+    adminMfaCoverage.coverage,
+    adminMfaCoverage.totalAdmins
+  );
+  const conditionalAccessBaselineStatus = getConditionalAccessBaselineStatus(
+    conditionalAccessBaseline.totalPolicies,
+    conditionalAccessBaseline.enabledPolicies
   );
   const guestGovernanceStatus = getGuestUsersGovernanceStatus(guestRatio);
   const disabledHygieneStatus = getDisabledUsersHygieneStatus(
@@ -200,6 +220,47 @@ export async function getDashboardOverview(
         count: breakGlassCandidateSummary.count,
         globalAdminCount: breakGlassCandidateSummary.globalAdminCount,
         candidates: breakGlassCandidateSummary.candidates
+      }
+    },
+    {
+      id: checkDefinitions.adminMfaCoverage.id,
+      title: checkDefinitions.adminMfaCoverage.title,
+      kind: checkDefinitions.adminMfaCoverage.kind,
+      category: checkDefinitions.adminMfaCoverage.category,
+      value: `${adminMfaCoverage.coverage} %`,
+      status: adminMfaCoverageStatus,
+      description: checkDefinitions.adminMfaCoverage.description,
+      whyItMatters: checkDefinitions.adminMfaCoverage.whyItMatters,
+      recommendation: getAdminMfaCoverageRecommendation(
+        adminMfaCoverageStatus
+      ),
+      howToFix: checkDefinitions.adminMfaCoverage.howToFix,
+      ...getCheckMetadata(checkDefinitions.adminMfaCoverage),
+      details: {
+        totalAdmins: adminMfaCoverage.totalAdmins,
+        registeredAdmins: adminMfaCoverage.registeredAdmins,
+        unregisteredAdmins: adminMfaCoverage.unregisteredAdmins,
+        coverage: adminMfaCoverage.coverage
+      }
+    },
+    {
+      id: checkDefinitions.conditionalAccessBaseline.id,
+      title: checkDefinitions.conditionalAccessBaseline.title,
+      kind: checkDefinitions.conditionalAccessBaseline.kind,
+      category: checkDefinitions.conditionalAccessBaseline.category,
+      value: `${conditionalAccessBaseline.enabledPolicies.toLocaleString()} enabled`,
+      status: conditionalAccessBaselineStatus,
+      description: checkDefinitions.conditionalAccessBaseline.description,
+      whyItMatters: checkDefinitions.conditionalAccessBaseline.whyItMatters,
+      recommendation: getConditionalAccessBaselineRecommendation(
+        conditionalAccessBaselineStatus
+      ),
+      howToFix: checkDefinitions.conditionalAccessBaseline.howToFix,
+      ...getCheckMetadata(checkDefinitions.conditionalAccessBaseline),
+      details: {
+        totalPolicies: conditionalAccessBaseline.totalPolicies,
+        enabledPolicies: conditionalAccessBaseline.enabledPolicies,
+        disabledPolicies: conditionalAccessBaseline.disabledPolicies
       }
     },
     {

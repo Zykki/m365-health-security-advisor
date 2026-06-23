@@ -79,6 +79,47 @@ export const checkDefinitions = {
     licenseRequired: "Microsoft 365 Business Standard or higher",
     source: "Microsoft Entra ID directory roles and users"
   },
+  adminMfaCoverage: {
+    id: "SEC-005",
+    title: "Admin MFA Coverage",
+    kind: "Security",
+    category: "Admin",
+    description:
+      "Measures how many privileged administrator accounts are registered for MFA or strong authentication methods.",
+    whyItMatters:
+      "Privileged accounts are high-value targets. If admin accounts are not registered for MFA, a compromised password can lead to full tenant compromise.",
+    recommendation:
+      "All privileged administrator accounts should be registered for MFA. Where possible, use phishing-resistant methods such as FIDO2 security keys or passkeys.",
+    howToFix:
+      "1. Identify all privileged administrator accounts. 2. Require MFA registration for all admin accounts. 3. Prefer phishing-resistant authentication for highly privileged roles. 4. Review and remove unnecessary privileged assignments. 5. Monitor admin sign-ins.",
+    severity: "Critical",
+    securityImpact: "Critical",
+    operationalImpact: "Medium",
+    estimatedEffortMinutes: 60,
+    licenseRequired: "Microsoft 365 Business Standard or higher",
+    source:
+      "Microsoft Graph credentialUserRegistrationDetails and Entra ID directory roles"
+  },
+  conditionalAccessBaseline: {
+    id: "SEC-007",
+    title: "Conditional Access Baseline",
+    kind: "Security",
+    category: "Identity",
+    description:
+      "Checks whether Conditional Access policies are configured in the tenant.",
+    whyItMatters:
+      "Conditional Access is the primary control used to enforce MFA, restrict access and protect identities.",
+    recommendation:
+      "Maintain multiple enabled Conditional Access policies covering administrators and standard users.",
+    howToFix:
+      "1. Create Conditional Access policies. 2. Enable MFA enforcement. 3. Protect administrator accounts. 4. Test policies using report-only mode before rollout. 5. Review policy effectiveness regularly.",
+    severity: "Critical",
+    securityImpact: "Critical",
+    operationalImpact: "Medium",
+    estimatedEffortMinutes: 90,
+    licenseRequired: "Microsoft 365 Business Premium or Entra ID P1",
+    source: "Microsoft Graph Conditional Access Policies"
+  },
   guestUsersGovernance: {
     id: "GOV-001",
     title: "Guest Users Governance",

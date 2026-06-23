@@ -85,3 +85,37 @@ export function getBreakGlassAccountsStatus(count: number): CheckStatus {
 
   return "OK";
 }
+
+export function getAdminMfaCoverageStatus(
+  coverage: number,
+  totalAdmins: number
+): CheckStatus {
+  if (totalAdmins === 0) {
+    return "Critical";
+  }
+
+  if (coverage === 100) {
+    return "OK";
+  }
+
+  if (coverage >= 90) {
+    return "Warning";
+  }
+
+  return "Critical";
+}
+
+export function getConditionalAccessBaselineStatus(
+  totalPolicies: number,
+  enabledPolicies: number
+): CheckStatus {
+  if (totalPolicies === 0 || enabledPolicies === 0) {
+    return "Critical";
+  }
+
+  if (enabledPolicies <= 2) {
+    return "Warning";
+  }
+
+  return "OK";
+}

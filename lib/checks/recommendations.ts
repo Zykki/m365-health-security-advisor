@@ -48,3 +48,29 @@ export function getBreakGlassAccountsRecommendation(status: CheckStatus) {
 
   return checkDefinitions.breakGlassAccounts.recommendation;
 }
+
+export function getAdminMfaCoverageRecommendation(status: CheckStatus) {
+  if (status === "OK") {
+    return checkDefinitions.adminMfaCoverage.recommendation;
+  }
+
+  if (status === "Warning") {
+    return "Some privileged administrator accounts are not registered for MFA. Complete registration for every admin account.";
+  }
+
+  return "Privileged administrator MFA registration is below the desired baseline. Require MFA registration for all admin accounts as a priority.";
+}
+
+export function getConditionalAccessBaselineRecommendation(
+  status: CheckStatus
+) {
+  if (status === "Critical") {
+    return "No enabled Conditional Access policies were found. Create and enable baseline policies for administrators and standard users.";
+  }
+
+  if (status === "Warning") {
+    return "Only a small number of Conditional Access policies are enabled. Review whether admins and standard users are covered by baseline policies.";
+  }
+
+  return checkDefinitions.conditionalAccessBaseline.recommendation;
+}
