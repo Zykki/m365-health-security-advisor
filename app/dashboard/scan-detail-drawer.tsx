@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 
 export type ScanDetailCheckResult = {
@@ -105,6 +106,13 @@ export function ScanDetailDrawer({
               <span>Warning: {scan.warningCount}</span>
               <span>Critical: {scan.criticalCount}</span>
             </div>
+
+            <Link
+              className="report-preview-link"
+              href={`/reports/${encodeURIComponent(scan.id)}`}
+            >
+              Open report preview
+            </Link>
 
             <div className="drawer-section">
               <h3>Check Results</h3>
