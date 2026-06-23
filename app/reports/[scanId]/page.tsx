@@ -52,6 +52,32 @@ function getTopRecommendations(checkResults: ReportCheckResult[]) {
     .slice(0, 3);
 }
 
+function renderFinding(result: ReportCheckResult) {
+  return (
+    <article className="report-check-card" key={result.checkId}>
+      <div className="report-check-header">
+        <div>
+          <span>{result.checkId}</span>
+          <h3>{result.title}</h3>
+        </div>
+        <span className={`status-pill status-${result.status.toLowerCase()}`}>
+          {result.status}
+        </span>
+      </div>
+      <dl>
+        <div>
+          <dt>Value</dt>
+          <dd>{result.value}</dd>
+        </div>
+      </dl>
+      <div>
+        <h4>Recommendation</h4>
+        <p>{result.recommendation}</p>
+      </div>
+    </article>
+  );
+}
+
 export default async function ReportPreviewPage({
   params
 }: ReportPreviewPageProps) {
@@ -100,6 +126,15 @@ export default async function ReportPreviewPage({
   }
 
   const topRecommendations = getTopRecommendations(scan.checkResults);
+  const criticalFindings = scan.checkResults.filter(
+    (result) => result.status === "Critical"
+  );
+  const warningFindings = scan.checkResults.filter(
+    (result) => result.status === "Warning"
+  );
+  const passedChecks = scan.checkResults.filter(
+    (result) => result.status === "OK"
+  );
 
   return (
     <main className="report-preview-shell">
@@ -130,16 +165,16 @@ export default async function ReportPreviewPage({
           <p>{getExecutiveSummaryText(scan.healthScore)}</p>
           <dl>
             <div>
-              <dt>OK</dt>
-              <dd>{scan.okCount}</dd>
+              <dt>Critical Findings</dt>
+              <dd>{criticalFindings.length}</dd>
             </div>
             <div>
-              <dt>Warning</dt>
-              <dd>{scan.warningCount}</dd>
+              <dt>Warning Findings</dt>
+              <dd>{warningFindings.length}</dd>
             </div>
             <div>
-              <dt>Critical</dt>
-              <dd>{scan.criticalCount}</dd>
+              <dt>Passed Checks</dt>
+              <dd>{passedChecks.length}</dd>
             </div>
           </dl>
         </div>
@@ -219,32 +254,41 @@ export default async function ReportPreviewPage({
           <h2 id="detailed-findings">Detailed Findings</h2>
         </div>
 
-        <div className="report-check-list">
-          {scan.checkResults.map((result) => (
-            <article className="report-check-card" key={result.checkId}>
-              <div className="report-check-header">
-                <div>
-                  <span>{result.checkId}</span>
-                  <h3>{result.title}</h3>
-                </div>
-                <span
-                  className={`status-pill status-${result.status.toLowerCase()}`}
-                >
-                  {result.status}
-                </span>
+        <div className="report-findings-groups">
+          <section aria-labelledby="critical-findings">
+            <h3 id="critical-findings">Critical Findings</h3>
+            {criticalFindings.length === 0 ? (
+              <p className="report-empty-state">
+                No critical findings detected.
+              </p>
+            ) : (
+              <div className="report-check-list">
+                {criticalFindings.map(renderFinding)}
               </div>
-              <dl>
-                <div>
-                  <dt>Value</dt>
-                  <dd>{result.value}</dd>
-                </div>
-              </dl>
-              <div>
-                <h4>Recommendation</h4>
-                <p>{result.recommendation}</p>
+            )}
+          </section>
+
+          <section aria-labelledby="warning-findings">
+            <h3 id="warning-findings">Warning Findings</h3>
+            {warningFindings.length === 0 ? (
+              <p className="report-empty-state">No warning findings detected.</p>
+            ) : (
+              <div className="report-check-list">
+                {warningFindings.map(renderFinding)}
               </div>
-            </article>
-          ))}
+            )}
+          </section>
+
+          <section aria-labelledby="passed-checks">
+            <h3 id="passed-checks">Passed Checks</h3>
+            {passedChecks.length === 0 ? (
+              <p className="report-empty-state">No passed checks available.</p>
+            ) : (
+              <div className="report-check-list">
+                {passedChecks.map(renderFinding)}
+              </div>
+            )}
+          </section>
         </div>
       </section>
     </main>

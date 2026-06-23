@@ -723,6 +723,21 @@ button {
   gap: 16px;
 }
 
+.report-findings-groups {
+  display: grid;
+  gap: 24px;
+}
+
+.report-findings-groups > section {
+  break-inside: avoid;
+}
+
+.report-findings-groups h3 {
+  font-size: 1.18rem;
+  line-height: 1.25;
+  margin: 0 0 14px;
+}
+
 .report-check-card {
   break-inside: avoid;
   border: 1px solid var(--border);
