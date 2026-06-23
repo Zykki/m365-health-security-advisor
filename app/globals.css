@@ -605,6 +605,17 @@ button {
   margin: 0;
 }
 
+.report-scan-date {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0 0 28px;
+}
+
+.report-scan-date strong {
+  color: var(--foreground);
+}
+
 .report-back-link,
 .report-preview-link {
   align-items: center;
@@ -621,8 +632,7 @@ button {
 .report-summary {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  margin-bottom: 28px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .report-summary article {
@@ -648,7 +658,64 @@ button {
 
 .report-section {
   border-top: 1px solid var(--border);
+  margin-top: 28px;
   padding-top: 24px;
+}
+
+.report-executive-summary {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.report-executive-summary > div > span {
+  color: var(--muted);
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.report-executive-summary > div > strong {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.report-executive-summary p {
+  line-height: 1.6;
+  margin: 0;
+  max-width: 72ch;
+}
+
+.report-executive-summary dl {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.report-executive-summary dl div {
+  background: var(--surface);
+  border: 1px solid #d5dde9;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.report-executive-summary dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.report-executive-summary dd {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin: 0;
 }
 
 .report-check-list {
@@ -699,6 +766,20 @@ button {
 .report-check-card p {
   line-height: 1.55;
   margin: 0;
+}
+
+.report-recommendation-card {
+  border-color: #c6d7e8;
+}
+
+.report-empty-state {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1.5;
+  margin: 0;
+  padding: 18px;
 }
 
 .drawer-overlay {
@@ -950,6 +1031,10 @@ button {
   .report-summary {
     grid-template-columns: 1fr;
   }
+
+  .report-executive-summary dl {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (min-width: 761px) and (max-width: 1040px) {
@@ -977,8 +1062,23 @@ button {
     display: none;
   }
 
+  .report-header {
+    margin-bottom: 22px;
+  }
+
+  .report-section {
+    margin-top: 24px;
+  }
+
   .report-check-card,
-  .report-summary article {
+  .report-summary article,
+  .report-executive-summary,
+  .report-executive-summary dl div,
+  .report-empty-state {
     border-color: #b8beca;
+  }
+
+  .report-executive-summary dl div {
+    background: #ffffff;
   }
 }
