@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { PrintReportButton } from "@/app/reports/[scanId]/print-report-button";
 import { prisma } from "@/lib/prisma";
 
 type ReportPreviewPageProps = {
@@ -143,9 +144,12 @@ export default async function ReportPreviewPage({
           <p className="eyebrow">Report Preview</p>
           <h1>M365 Health & Security Report</h1>
         </div>
-        <Link className="report-back-link" href="/dashboard">
-          Back to dashboard
-        </Link>
+        <div className="report-actions">
+          <PrintReportButton />
+          <Link className="report-back-link" href="/dashboard">
+            Back to dashboard
+          </Link>
+        </div>
       </header>
 
       <p className="report-scan-date">
