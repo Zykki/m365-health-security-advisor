@@ -59,6 +59,26 @@ export const checkDefinitions = {
     licenseRequired: "Microsoft 365 Business Standard or higher",
     source: "Microsoft Entra ID directory roles"
   },
+  breakGlassAccounts: {
+    id: "SEC-004",
+    title: "Break Glass Accounts",
+    kind: "Security",
+    category: "Identity",
+    description:
+      "Checks whether the tenant appears to have emergency access accounts.",
+    whyItMatters:
+      "Break-glass accounts help retain administrative access during Conditional Access, MFA, identity provider, or account lockout incidents.",
+    recommendation:
+      "Maintain two cloud-only emergency access accounts, protect them carefully, exclude them from Conditional Access where appropriate, and monitor their sign-ins.",
+    howToFix:
+      "1. Create two cloud-only emergency access accounts. 2. Assign Global Administrator only if required. 3. Exclude them from Conditional Access policies that could block all access. 4. Use strong credentials stored securely. 5. Monitor sign-in activity and alert on use.",
+    severity: "High",
+    securityImpact: "Critical",
+    operationalImpact: "Low",
+    estimatedEffortMinutes: 45,
+    licenseRequired: "Microsoft 365 Business Standard or higher",
+    source: "Microsoft Entra ID directory roles and users"
+  },
   guestUsersGovernance: {
     id: "GOV-001",
     title: "Guest Users Governance",

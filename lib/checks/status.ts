@@ -73,3 +73,15 @@ export function getAdminAccountsHygieneStatus(
 
   return "OK";
 }
+
+export function getBreakGlassAccountsStatus(count: number): CheckStatus {
+  if (count === 0) {
+    return "Critical";
+  }
+
+  if (count === 1) {
+    return "Warning";
+  }
+
+  return "OK";
+}

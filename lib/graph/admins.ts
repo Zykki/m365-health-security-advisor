@@ -42,9 +42,32 @@ type DirectoryRoleMembersResponse = {
   "@odata.nextLink"?: string;
 };
 
+type DirectoryRoleUserMember = {
+  id?: string;
+  displayName?: string | null;
+  userPrincipalName?: string | null;
+};
+
+type DirectoryRoleUserMembersResponse = {
+  value?: DirectoryRoleUserMember[];
+  "@odata.nextLink"?: string;
+};
+
 type PrivilegedRoleMemberSummaryRole = {
   roleName: string;
   count: number;
+};
+
+export type BreakGlassCandidate = {
+  id: string;
+  displayName: string;
+  userPrincipalName: string;
+};
+
+export type BreakGlassCandidateSummary = {
+  count: number;
+  candidates: BreakGlassCandidate[];
+  globalAdminCount: number;
 };
 
 export type PrivilegedRoleMemberSummary = {
@@ -52,6 +75,15 @@ export type PrivilegedRoleMemberSummary = {
   privilegedAdmins: number;
   roles: PrivilegedRoleMemberSummaryRole[];
 };
+
+const BREAK_GLASS_NAME_PATTERNS = [
+  "break",
+  "emergency",
+  "glass",
+  "cloudadmin",
+  "breakglass",
+  "bg-"
+];
 
 async function getDirectoryRoleMemberCount(
   accessToken: string,
@@ -79,6 +111,54 @@ async function getDirectoryRoleMemberCount(
 
 export function getGlobalAdminCount(accessToken: string) {
   return getDirectoryRoleMemberCount(accessToken, GLOBAL_ADMIN_ROLE_TEMPLATE_ID);
+}
+
+function isBreakGlassCandidate(member: BreakGlassCandidate) {
+  const searchableName =
+    `${member.displayName} ${member.userPrincipalName}`.toLowerCase();
+
+  return BREAK_GLASS_NAME_PATTERNS.some((pattern) =>
+    searchableName.includes(pattern)
+  );
+}
+
+export async function getBreakGlassCandidates(
+  accessToken: string
+): Promise<BreakGlassCandidateSummary> {
+  const client = createGraphClient(accessToken);
+  let requestUrl = `/directoryRoles/roleTemplateId=${GLOBAL_ADMIN_ROLE_TEMPLATE_ID}/members/microsoft.graph.user`;
+  const globalAdminMembers: BreakGlassCandidate[] = [];
+
+  while (requestUrl) {
+    const request = client.api(requestUrl);
+
+    if (!requestUrl.startsWith("https://")) {
+      request.select("id,displayName,userPrincipalName");
+    }
+
+    const response =
+      (await request.get()) as DirectoryRoleUserMembersResponse;
+    const users = response.value ?? [];
+
+    globalAdminMembers.push(
+      ...users
+        .filter((user) => user.id)
+        .map((user) => ({
+          id: user.id ?? "",
+          displayName: user.displayName ?? "",
+          userPrincipalName: user.userPrincipalName ?? ""
+        }))
+    );
+    requestUrl = response["@odata.nextLink"] ?? "";
+  }
+
+  const candidates = globalAdminMembers.filter(isBreakGlassCandidate);
+
+  return {
+    count: candidates.length,
+    candidates,
+    globalAdminCount: globalAdminMembers.length
+  };
 }
 
 export async function getPrivilegedRoleMemberSummary(

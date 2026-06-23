@@ -36,3 +36,15 @@ export function getMfaRegistrationCoverageRecommendation(status: CheckStatus) {
 export function getAdminAccountsHygieneRecommendation() {
   return checkDefinitions.adminAccountsHygiene.recommendation;
 }
+
+export function getBreakGlassAccountsRecommendation(status: CheckStatus) {
+  if (status === "Critical") {
+    return "No likely break-glass accounts were found by naming heuristic. Maintain two cloud-only emergency access accounts and monitor their use.";
+  }
+
+  if (status === "Warning") {
+    return "Only one likely break-glass account was found by naming heuristic. Maintain two protected emergency access accounts where possible.";
+  }
+
+  return checkDefinitions.breakGlassAccounts.recommendation;
+}

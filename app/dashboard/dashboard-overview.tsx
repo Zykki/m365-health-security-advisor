@@ -380,7 +380,7 @@ export function DashboardOverviewPanel() {
       ? recentScans[0].healthScore - recentScans[1].healthScore
       : null;
   const securityChecks = overview
-    ? getChecksById(overview, ["SEC-001", "SEC-002", "SEC-003"])
+    ? getChecksById(overview, ["SEC-001", "SEC-002", "SEC-003", "SEC-004"])
     : [];
   const governanceChecks = overview
     ? getChecksById(overview, ["GOV-001", "HYG-001"])
@@ -618,7 +618,8 @@ export function DashboardOverviewPanel() {
             ? [
                 "Global Admin Count",
                 "MFA Registration Coverage",
-                "Admin Accounts Hygiene"
+                "Admin Accounts Hygiene",
+                "Break Glass Accounts"
               ].map((title) => (
                 <SecurityCheckCard key={title} title={title} loading />
               ))

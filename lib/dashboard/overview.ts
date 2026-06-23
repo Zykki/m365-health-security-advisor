@@ -1,6 +1,7 @@
 import { checkDefinitions } from "@/lib/checks/definitions";
 import {
   getAdminAccountsHygieneRecommendation,
+  getBreakGlassAccountsRecommendation,
   getDisabledUsersHygieneRecommendation,
   getGlobalAdminRecommendation,
   getGuestUsersGovernanceRecommendation,
@@ -11,6 +12,7 @@ import { getQuickWins } from "@/lib/checks/quick-wins";
 import type { QuickWin } from "@/lib/checks/quick-wins";
 import {
   getAdminAccountsHygieneStatus,
+  getBreakGlassAccountsStatus,
   getDisabledUsersHygieneStatus,
   getGlobalAdminStatus,
   getGuestUsersGovernanceStatus,
@@ -18,7 +20,10 @@ import {
 } from "@/lib/checks/status";
 import type { CheckCategory, CheckKind, CheckStatus } from "@/lib/checks/types";
 import type { CheckDefinition } from "@/lib/checks/types";
-import { getPrivilegedRoleMemberSummary } from "@/lib/graph/admins";
+import {
+  getBreakGlassCandidates,
+  getPrivilegedRoleMemberSummary
+} from "@/lib/graph/admins";
 import { getMfaRegistrationCoverage } from "@/lib/graph/authentication-methods";
 import {
   getDisabledUserCount,
@@ -93,6 +98,7 @@ export async function getDashboardOverview(
     enabledUsers,
     disabledUsers,
     privilegedRoleSummary,
+    breakGlassCandidateSummary,
     mfaCoverage
   ] = await Promise.all([
     getUserCount(accessToken),
@@ -101,6 +107,7 @@ export async function getDashboardOverview(
     getEnabledUserCount(accessToken),
     getDisabledUserCount(accessToken),
     getPrivilegedRoleMemberSummary(accessToken),
+    getBreakGlassCandidates(accessToken),
     getMfaRegistrationCoverage(accessToken)
   ]);
 
@@ -121,6 +128,9 @@ export async function getDashboardOverview(
   const adminAccountsHygieneStatus = getAdminAccountsHygieneStatus(
     privilegedRoleSummary.globalAdmins,
     privilegedRoleSummary.privilegedAdmins
+  );
+  const breakGlassAccountsStatus = getBreakGlassAccountsStatus(
+    breakGlassCandidateSummary.count
   );
   const guestGovernanceStatus = getGuestUsersGovernanceStatus(guestRatio);
   const disabledHygieneStatus = getDisabledUsersHygieneStatus(
@@ -168,6 +178,28 @@ export async function getDashboardOverview(
       ...getCheckMetadata(checkDefinitions.adminAccountsHygiene),
       details: {
         roles: privilegedRoleSummary.roles
+      }
+    },
+    {
+      id: checkDefinitions.breakGlassAccounts.id,
+      title: checkDefinitions.breakGlassAccounts.title,
+      kind: checkDefinitions.breakGlassAccounts.kind,
+      category: checkDefinitions.breakGlassAccounts.category,
+      value: `${breakGlassCandidateSummary.count.toLocaleString()} ${
+        breakGlassCandidateSummary.count === 1 ? "candidate" : "candidates"
+      }`,
+      status: breakGlassAccountsStatus,
+      description: checkDefinitions.breakGlassAccounts.description,
+      whyItMatters: checkDefinitions.breakGlassAccounts.whyItMatters,
+      recommendation: getBreakGlassAccountsRecommendation(
+        breakGlassAccountsStatus
+      ),
+      howToFix: checkDefinitions.breakGlassAccounts.howToFix,
+      ...getCheckMetadata(checkDefinitions.breakGlassAccounts),
+      details: {
+        count: breakGlassCandidateSummary.count,
+        globalAdminCount: breakGlassCandidateSummary.globalAdminCount,
+        candidates: breakGlassCandidateSummary.candidates
       }
     },
     {
