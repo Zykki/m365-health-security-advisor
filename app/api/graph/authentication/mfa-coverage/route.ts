@@ -46,6 +46,7 @@ export async function GET() {
       title: checkDefinition.title,
       kind: checkDefinition.kind,
       category: checkDefinition.category,
+      domain: checkDefinition.domain,
       status,
       value: `${registrationCoverage} %`,
       recommendation: getMfaRegistrationCoverageRecommendation(status),

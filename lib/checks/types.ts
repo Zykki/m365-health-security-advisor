@@ -11,6 +11,8 @@ export type SecurityImpact = "Low" | "Medium" | "High" | "Critical";
 
 export type OperationalImpact = "Low" | "Medium" | "High";
 
+export type CheckDomain = "IdentitySecurity" | "Governance" | "TenantHygiene";
+
 export type CheckKind = "Security" | "Governance" | "Hygiene" | "Overview";
 
 export type CheckCategory =
@@ -35,6 +37,7 @@ export type CheckDefinition = {
   estimatedEffortMinutes: number;
   licenseRequired: string;
   source: string;
+  domain: CheckDomain;
 };
 
 export type CheckResult = {
@@ -42,6 +45,7 @@ export type CheckResult = {
   title: string;
   kind: CheckKind;
   category: CheckCategory;
+  domain: CheckDomain;
   status: CheckStatus;
   value: number | string;
   recommendation: string;

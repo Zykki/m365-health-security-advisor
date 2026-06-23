@@ -65,6 +65,16 @@ const userMetrics: Array<{
   { key: "disabled", label: "Disabled Users" }
 ];
 
+const maturityItems: Array<{
+  key: keyof DashboardOverview["maturity"];
+  label: string;
+}> = [
+  { key: "overall", label: "Overall" },
+  { key: "identitySecurity", label: "Identity Security" },
+  { key: "governance", label: "Governance" },
+  { key: "tenantHygiene", label: "Tenant Hygiene" }
+];
+
 function isDashboardOverview(value: unknown): value is DashboardOverview {
   if (!value || typeof value !== "object") {
     return false;
@@ -74,18 +84,25 @@ function isDashboardOverview(value: unknown): value is DashboardOverview {
   const tenant = payload.tenant as Record<string, unknown> | undefined;
   const users = payload.users as Record<string, unknown> | undefined;
   const healthScore = payload.healthScore as Record<string, unknown> | undefined;
+  const maturity = payload.maturity as Record<string, unknown> | undefined;
 
   return (
     !!tenant &&
     !!users &&
     !!healthScore &&
+    !!maturity &&
     Array.isArray(payload.checks) &&
     Array.isArray(payload.quickWins) &&
     userMetrics.every(({ key }) => typeof users[key] === "number") &&
     typeof healthScore.score === "number" &&
     typeof healthScore.okCount === "number" &&
     typeof healthScore.warningCount === "number" &&
-    typeof healthScore.criticalCount === "number"
+    typeof healthScore.criticalCount === "number" &&
+    maturityItems.every(({ key }) => {
+      const score = maturity[key] as Record<string, unknown> | undefined;
+
+      return typeof score?.score === "number" && typeof score.level === "string";
+    })
   );
 }
 
@@ -372,6 +389,7 @@ export function DashboardOverviewPanel() {
   const overview = state.status === "loaded" ? state.overview : null;
   const tenant = overview?.tenant;
   const healthScore = overview?.healthScore;
+  const maturity = overview?.maturity;
   const quickWins = overview?.quickWins ?? [];
   const recentScans =
     recentScansState.status === "loaded" ? recentScansState.scans : [];
@@ -441,6 +459,27 @@ export function DashboardOverviewPanel() {
           {saveScanState === "error" && (
             <span className="save-scan-message error">Unable to save scan</span>
           )}
+        </div>
+      </section>
+
+      <section className="maturity-section" aria-labelledby="maturity-overview">
+        <div className="section-heading">
+          <p className="eyebrow">Maturity Model</p>
+          <h2 id="maturity-overview">Maturity Overview</h2>
+        </div>
+
+        <div className="maturity-grid">
+          {maturityItems.map(({ key, label }) => (
+            <article key={key}>
+              <span>{label}</span>
+              <strong>
+                {state.status === "loading" ? "Loading..." : maturity?.[key].score}
+              </strong>
+              <em>
+                {state.status === "loading" ? "Loading..." : maturity?.[key].level}
+              </em>
+            </article>
+          ))}
         </div>
       </section>
 

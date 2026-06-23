@@ -1,6 +1,10 @@
 import { checkDefinitions } from "@/lib/checks/definitions";
 import { assessLegacyAuthenticationExposure } from "@/lib/checks/legacy-auth-assessment";
 import {
+  calculateDomainScore,
+  getMaturityLevel
+} from "@/lib/checks/maturity";
+import {
   getAdminAccountsHygieneRecommendation,
   getAdminMfaCoverageRecommendation,
   getBreakGlassAccountsRecommendation,
@@ -25,7 +29,12 @@ import {
   getLegacyAuthenticationStatusResult,
   getMfaRegistrationCoverageStatus
 } from "@/lib/checks/status";
-import type { CheckCategory, CheckKind, CheckStatus } from "@/lib/checks/types";
+import type {
+  CheckCategory,
+  CheckDomain,
+  CheckKind,
+  CheckStatus
+} from "@/lib/checks/types";
 import type { CheckDefinition } from "@/lib/checks/types";
 import {
   getBreakGlassCandidates,
@@ -60,6 +69,7 @@ export type DashboardCheck = {
   title: string;
   kind: CheckKind;
   category: CheckCategory;
+  domain: CheckDomain;
   value: string;
   status: CheckStatus;
   description: string;
@@ -72,6 +82,11 @@ export type DashboardCheck = {
   licenseRequired: string;
   source: string;
   details?: Record<string, unknown>;
+};
+
+export type DashboardMaturityScore = {
+  score: number;
+  level: string;
 };
 
 export type DashboardOverview = {
@@ -90,6 +105,12 @@ export type DashboardOverview = {
     criticalCount: number;
   };
   quickWins: QuickWin[];
+  maturity: {
+    overall: DashboardMaturityScore;
+    identitySecurity: DashboardMaturityScore;
+    governance: DashboardMaturityScore;
+    tenantHygiene: DashboardMaturityScore;
+  };
   checks: DashboardCheck[];
 };
 
@@ -100,6 +121,21 @@ function getCheckMetadata(definition: CheckDefinition) {
     estimatedEffortMinutes: definition.estimatedEffortMinutes,
     licenseRequired: definition.licenseRequired,
     source: definition.source
+  };
+}
+
+function getCheckIdentity(definition: CheckDefinition) {
+  return {
+    kind: definition.kind,
+    category: definition.category,
+    domain: definition.domain
+  };
+}
+
+function getMaturityScore(score: number): DashboardMaturityScore {
+  return {
+    score,
+    level: getMaturityLevel(score).level
   };
 }
 
@@ -183,8 +219,7 @@ export async function getDashboardOverview(
     {
       id: checkDefinitions.globalAdminCount.id,
       title: checkDefinitions.globalAdminCount.title,
-      kind: checkDefinitions.globalAdminCount.kind,
-      category: checkDefinitions.globalAdminCount.category,
+      ...getCheckIdentity(checkDefinitions.globalAdminCount),
       value: privilegedRoleSummary.globalAdmins.toLocaleString(),
       status: globalAdminStatus,
       description: checkDefinitions.globalAdminCount.description,
@@ -196,8 +231,7 @@ export async function getDashboardOverview(
     {
       id: checkDefinitions.mfaRegistrationCoverage.id,
       title: checkDefinitions.mfaRegistrationCoverage.title,
-      kind: checkDefinitions.mfaRegistrationCoverage.kind,
-      category: checkDefinitions.mfaRegistrationCoverage.category,
+      ...getCheckIdentity(checkDefinitions.mfaRegistrationCoverage),
       value: `${mfaCoverage.registrationCoverage} %`,
       status: mfaStatus,
       description: checkDefinitions.mfaRegistrationCoverage.description,
@@ -209,8 +243,7 @@ export async function getDashboardOverview(
     {
       id: checkDefinitions.adminAccountsHygiene.id,
       title: checkDefinitions.adminAccountsHygiene.title,
-      kind: checkDefinitions.adminAccountsHygiene.kind,
-      category: checkDefinitions.adminAccountsHygiene.category,
+      ...getCheckIdentity(checkDefinitions.adminAccountsHygiene),
       value: `${privilegedRoleSummary.globalAdmins.toLocaleString()} global / ${privilegedRoleSummary.privilegedAdmins.toLocaleString()} privileged`,
       status: adminAccountsHygieneStatus,
       description: checkDefinitions.adminAccountsHygiene.description,
@@ -225,8 +258,7 @@ export async function getDashboardOverview(
     {
       id: checkDefinitions.breakGlassAccounts.id,
       title: checkDefinitions.breakGlassAccounts.title,
-      kind: checkDefinitions.breakGlassAccounts.kind,
-      category: checkDefinitions.breakGlassAccounts.category,
+      ...getCheckIdentity(checkDefinitions.breakGlassAccounts),
       value: `${breakGlassCandidateSummary.count.toLocaleString()} ${
         breakGlassCandidateSummary.count === 1 ? "candidate" : "candidates"
       }`,
@@ -247,8 +279,7 @@ export async function getDashboardOverview(
     {
       id: checkDefinitions.adminMfaCoverage.id,
       title: checkDefinitions.adminMfaCoverage.title,
-      kind: checkDefinitions.adminMfaCoverage.kind,
-      category: checkDefinitions.adminMfaCoverage.category,
+      ...getCheckIdentity(checkDefinitions.adminMfaCoverage),
       value: `${adminMfaCoverage.coverage} %`,
       status: adminMfaCoverageStatus,
       description: checkDefinitions.adminMfaCoverage.description,
@@ -268,8 +299,7 @@ export async function getDashboardOverview(
     {
       id: checkDefinitions.legacyAuthentication.id,
       title: checkDefinitions.legacyAuthentication.title,
-      kind: checkDefinitions.legacyAuthentication.kind,
-      category: checkDefinitions.legacyAuthentication.category,
+      ...getCheckIdentity(checkDefinitions.legacyAuthentication),
       value:
         legacyAuthenticationAssessment.exposure === "Unknown"
           ? "Unknown"
@@ -306,8 +336,7 @@ export async function getDashboardOverview(
     {
       id: checkDefinitions.conditionalAccessBaseline.id,
       title: checkDefinitions.conditionalAccessBaseline.title,
-      kind: checkDefinitions.conditionalAccessBaseline.kind,
-      category: checkDefinitions.conditionalAccessBaseline.category,
+      ...getCheckIdentity(checkDefinitions.conditionalAccessBaseline),
       value: `${conditionalAccessBaseline.enabledPolicies.toLocaleString()} enabled`,
       status: conditionalAccessBaselineStatus,
       description: checkDefinitions.conditionalAccessBaseline.description,
@@ -326,8 +355,7 @@ export async function getDashboardOverview(
     {
       id: checkDefinitions.guestUsersGovernance.id,
       title: checkDefinitions.guestUsersGovernance.title,
-      kind: checkDefinitions.guestUsersGovernance.kind,
-      category: checkDefinitions.guestUsersGovernance.category,
+      ...getCheckIdentity(checkDefinitions.guestUsersGovernance),
       value: `${guestRatio} %`,
       status: guestGovernanceStatus,
       description: checkDefinitions.guestUsersGovernance.description,
@@ -341,8 +369,7 @@ export async function getDashboardOverview(
     {
       id: checkDefinitions.disabledUsersHygiene.id,
       title: checkDefinitions.disabledUsersHygiene.title,
-      kind: checkDefinitions.disabledUsersHygiene.kind,
-      category: checkDefinitions.disabledUsersHygiene.category,
+      ...getCheckIdentity(checkDefinitions.disabledUsersHygiene),
       value: `${disabledUsers.toLocaleString()} disabled / ${disabledRatio} %`,
       status: disabledHygieneStatus,
       description: checkDefinitions.disabledUsersHygiene.description,
@@ -352,6 +379,13 @@ export async function getDashboardOverview(
       ...getCheckMetadata(checkDefinitions.disabledUsersHygiene)
     }
   ];
+  const overallHealthScore = calculateHealthScore(checks);
+  const identitySecurityScore = calculateDomainScore(
+    checks,
+    "IdentitySecurity"
+  );
+  const governanceScore = calculateDomainScore(checks, "Governance");
+  const tenantHygieneScore = calculateDomainScore(checks, "TenantHygiene");
 
   return {
     tenant,
@@ -362,8 +396,14 @@ export async function getDashboardOverview(
       enabled: enabledUsers,
       disabled: disabledUsers
     },
-    healthScore: calculateHealthScore(checks),
+    healthScore: overallHealthScore,
     quickWins: getQuickWins(checks),
+    maturity: {
+      overall: getMaturityScore(overallHealthScore.score),
+      identitySecurity: getMaturityScore(identitySecurityScore.score),
+      governance: getMaturityScore(governanceScore.score),
+      tenantHygiene: getMaturityScore(tenantHygieneScore.score)
+    },
     checks
   };
 }

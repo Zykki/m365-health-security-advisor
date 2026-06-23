@@ -2,6 +2,13 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { PrintReportButton } from "@/app/reports/[scanId]/print-report-button";
+import { checkDefinitions } from "@/lib/checks/definitions";
+import {
+  calculateDomainScore,
+  getMaturityLevel
+} from "@/lib/checks/maturity";
+import { calculateHealthScore } from "@/lib/checks/scoring";
+import type { CheckDomain, CheckStatus } from "@/lib/checks/types";
 import { prisma } from "@/lib/prisma";
 
 type ReportPreviewPageProps = {
@@ -16,6 +23,28 @@ type ReportCheckResult = {
   status: string;
   value: string;
   recommendation: string;
+};
+
+const reportMaturityItems: Array<{
+  key: keyof ReportMaturity;
+  label: string;
+}> = [
+  { key: "overall", label: "Overall" },
+  { key: "identitySecurity", label: "Identity Security" },
+  { key: "governance", label: "Governance" },
+  { key: "tenantHygiene", label: "Tenant Hygiene" }
+];
+
+type ReportMaturityScore = {
+  score: number;
+  level: string;
+};
+
+type ReportMaturity = {
+  overall: ReportMaturityScore;
+  identitySecurity: ReportMaturityScore;
+  governance: ReportMaturityScore;
+  tenantHygiene: ReportMaturityScore;
 };
 
 function formatReportDate(value: Date) {
@@ -35,6 +64,52 @@ function getExecutiveSummaryText(score: number) {
   }
 
   return "The tenant requires attention. Several security or governance findings should be addressed with priority.";
+}
+
+function isCheckStatus(value: string): value is CheckStatus {
+  return value === "OK" || value === "Warning" || value === "Critical";
+}
+
+function getCheckDefinitionById(checkId: string) {
+  return Object.values(checkDefinitions).find(
+    (definition) => definition.id === checkId
+  );
+}
+
+function getReportMaturity(checkResults: ReportCheckResult[]): ReportMaturity {
+  const checks = checkResults.flatMap((result) => {
+    const definition = getCheckDefinitionById(result.checkId);
+
+    if (!definition || !isCheckStatus(result.status)) {
+      return [];
+    }
+
+    return [
+      {
+        domain: definition.domain,
+        status: result.status
+      }
+    ];
+  });
+  const overallScore = calculateHealthScore(checks);
+
+  function toMaturityScore(score: number): ReportMaturityScore {
+    return {
+      score,
+      level: getMaturityLevel(score).level
+    };
+  }
+
+  function getDomainMaturityScore(domain: CheckDomain) {
+    return toMaturityScore(calculateDomainScore(checks, domain).score);
+  }
+
+  return {
+    overall: toMaturityScore(overallScore.score),
+    identitySecurity: getDomainMaturityScore("IdentitySecurity"),
+    governance: getDomainMaturityScore("Governance"),
+    tenantHygiene: getDomainMaturityScore("TenantHygiene")
+  };
 }
 
 function getTopRecommendations(checkResults: ReportCheckResult[]) {
@@ -136,6 +211,7 @@ export default async function ReportPreviewPage({
   const passedChecks = scan.checkResults.filter(
     (result) => result.status === "OK"
   );
+  const maturity = getReportMaturity(scan.checkResults);
 
   return (
     <main className="report-preview-shell">
@@ -181,6 +257,22 @@ export default async function ReportPreviewPage({
               <dd>{passedChecks.length}</dd>
             </div>
           </dl>
+        </div>
+      </section>
+
+      <section className="report-section" aria-labelledby="maturity-overview">
+        <div className="section-heading">
+          <p className="eyebrow">Maturity Model</p>
+          <h2 id="maturity-overview">Maturity Overview</h2>
+        </div>
+        <div className="report-maturity-grid">
+          {reportMaturityItems.map(({ key, label }) => (
+            <article key={key}>
+              <span>{label}</span>
+              <strong>{maturity[key].score}</strong>
+              <em>{maturity[key].level}</em>
+            </article>
+          ))}
         </div>
       </section>
 

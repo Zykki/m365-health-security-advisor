@@ -18,7 +18,8 @@ export const checkDefinitions = {
     operationalImpact: "Low",
     estimatedEffortMinutes: 30,
     licenseRequired: "Microsoft 365 Business Standard or higher",
-    source: "Microsoft Entra ID roles"
+    source: "Microsoft Entra ID roles",
+    domain: "IdentitySecurity"
   },
   mfaRegistrationCoverage: {
     id: "SEC-002",
@@ -38,7 +39,8 @@ export const checkDefinitions = {
     operationalImpact: "Medium",
     estimatedEffortMinutes: 60,
     licenseRequired: "Microsoft 365 Business Standard or higher",
-    source: "Microsoft Graph credentialUserRegistrationDetails"
+    source: "Microsoft Graph credentialUserRegistrationDetails",
+    domain: "IdentitySecurity"
   },
   adminAccountsHygiene: {
     id: "SEC-003",
@@ -57,7 +59,8 @@ export const checkDefinitions = {
     operationalImpact: "Low",
     estimatedEffortMinutes: 45,
     licenseRequired: "Microsoft 365 Business Standard or higher",
-    source: "Microsoft Entra ID directory roles"
+    source: "Microsoft Entra ID directory roles",
+    domain: "IdentitySecurity"
   },
   breakGlassAccounts: {
     id: "SEC-004",
@@ -77,7 +80,8 @@ export const checkDefinitions = {
     operationalImpact: "Low",
     estimatedEffortMinutes: 45,
     licenseRequired: "Microsoft 365 Business Standard or higher",
-    source: "Microsoft Entra ID directory roles and users"
+    source: "Microsoft Entra ID directory roles and users",
+    domain: "IdentitySecurity"
   },
   adminMfaCoverage: {
     id: "SEC-005",
@@ -98,7 +102,8 @@ export const checkDefinitions = {
     estimatedEffortMinutes: 60,
     licenseRequired: "Microsoft 365 Business Standard or higher",
     source:
-      "Microsoft Graph credentialUserRegistrationDetails and Entra ID directory roles"
+      "Microsoft Graph credentialUserRegistrationDetails and Entra ID directory roles",
+    domain: "IdentitySecurity"
   },
   legacyAuthentication: {
     id: "SEC-006",
@@ -118,7 +123,8 @@ export const checkDefinitions = {
     operationalImpact: "Medium",
     estimatedEffortMinutes: 60,
     licenseRequired: "Microsoft 365 Business Premium or Entra ID P1",
-    source: "Graph + Conditional Access + Secure Score"
+    source: "Graph + Conditional Access + Secure Score",
+    domain: "IdentitySecurity"
   },
   conditionalAccessBaseline: {
     id: "SEC-007",
@@ -138,7 +144,8 @@ export const checkDefinitions = {
     operationalImpact: "Medium",
     estimatedEffortMinutes: 90,
     licenseRequired: "Microsoft 365 Business Premium or Entra ID P1",
-    source: "Microsoft Graph Conditional Access Policies"
+    source: "Microsoft Graph Conditional Access Policies",
+    domain: "IdentitySecurity"
   },
   guestUsersGovernance: {
     id: "GOV-001",
@@ -157,7 +164,8 @@ export const checkDefinitions = {
     operationalImpact: "Low",
     estimatedEffortMinutes: 30,
     licenseRequired: "Microsoft 365 Business Standard or higher",
-    source: "Microsoft Entra ID users"
+    source: "Microsoft Entra ID users",
+    domain: "Governance"
   },
   disabledUsersHygiene: {
     id: "HYG-001",
@@ -177,7 +185,8 @@ export const checkDefinitions = {
     operationalImpact: "Low",
     estimatedEffortMinutes: 20,
     licenseRequired: "Microsoft 365 Business Standard or higher",
-    source: "Microsoft Entra ID users"
+    source: "Microsoft Entra ID users",
+    domain: "TenantHygiene"
   }
 } satisfies Record<string, CheckDefinition>;
 
